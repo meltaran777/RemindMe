@@ -8,5 +8,10 @@
     android:orderInCategory="1"
     android:id="@+id/search"
      />
+    <item android:title="Test"
+        android:icon="@drawable/ic_search"
+        android:orderInCategory="2"
+        android:id="@+id/test"
+        />
 
 </menu>

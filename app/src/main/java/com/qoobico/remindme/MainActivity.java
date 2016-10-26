@@ -2,16 +2,18 @@ package com.qoobico.remindme;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 /**
  * Created by Bodia on 09.06.2016.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.AppDefault);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_layout);
         initToolbar();
