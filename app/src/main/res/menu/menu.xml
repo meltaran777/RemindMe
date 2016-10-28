@@ -9,7 +9,7 @@
     android:id="@+id/search"
      />
     <item android:title="Test"
-        android:icon="@mipmap/ic_inf"
+        android:icon="@drawable/ic_inf"
         android:orderInCategory="2"
         android:id="@+id/test"
         />
