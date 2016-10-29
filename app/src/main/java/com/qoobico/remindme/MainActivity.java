@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -47,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         viewPager =(ViewPager) findViewById(R.id.ViewPager);
         tabLayout =(TabLayout) findViewById(R.id.TabLayout);
 
-        TabsPagerFragmentAdapter adapter = new TabsPagerFragmentAdapter(getSupportFragmentManager());
+        TabsPagerFragmentAdapter adapter = new TabsPagerFragmentAdapter(this,getSupportFragmentManager());
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
     }
@@ -68,23 +69,18 @@ public class MainActivity extends AppCompatActivity {
     private void initNavigationView(){
         drawerLayout=(DrawerLayout) findViewById(R.id.DrawerLayout);
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,drawerLayout,toolbar,
-                R.string.view_navigation_open,R.string.view_navigation_close);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,drawerLayout,toolbar, R.string.view_navigation_open,R.string.view_navigation_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.navigation);
-
-        navigationView.setCheckedItem(R.id.menu_item_notification);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
-                Toast.makeText(getApplicationContext(),"ITEM SELECTED",Toast.LENGTH_LONG).show();
                 drawerLayout.closeDrawers();
                 switch (item.getItemId()){
                     case R.id.menu_item_notification:
                         showNotificationTab();
-                        Toast.makeText(getApplicationContext(),"!!!!!!!!!!!",Toast.LENGTH_LONG).show();
                         break;
                 }
                 return true;
