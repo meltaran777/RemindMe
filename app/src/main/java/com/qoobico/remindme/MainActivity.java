@@ -1,6 +1,8 @@
 package com.qoobico.remindme;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -25,12 +27,14 @@ public class MainActivity extends AppCompatActivity {
     private static final int TAB_ONE=0;
     private static final int TAB_TWO=1;
     private static final int TAB_THREE=2;
+    private static final int TAB_FOUR=3;
 
 
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private TabLayout tabLayout;
     private ViewPager viewPager;
+    private NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,14 +70,16 @@ public class MainActivity extends AppCompatActivity {
         toolbar.inflateMenu(R.menu.menu);
     }
 
+
     private void initNavigationView(){
         drawerLayout=(DrawerLayout) findViewById(R.id.DrawerLayout);
+
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,drawerLayout,toolbar, R.string.view_navigation_open,R.string.view_navigation_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.navigation);
+        navigationView = (NavigationView) findViewById(R.id.navigation);
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
@@ -81,11 +87,13 @@ public class MainActivity extends AppCompatActivity {
                 switch (item.getItemId()){
                     case R.id.menu_item_notification:
                         showNotificationTab();
+                        Toast.makeText(getApplicationContext(),"",Toast.LENGTH_SHORT).show();
                         break;
                 }
                 return true;
             }
         });
+        navigationView.inflateMenu(R.menu.menu_navigation);
     }
 
     private void showNotificationTab(){
