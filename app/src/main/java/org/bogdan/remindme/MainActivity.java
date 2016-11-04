@@ -1,23 +1,25 @@
-package com.qoobico.remindme;
+package org.bogdan.remindme;
 
-import android.annotation.TargetApi;
-import android.app.Activity;
-import android.os.Build;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
 import android.widget.Toast;
 
-import com.qoobico.remindme.adapter.TabsPagerFragmentAdapter;
+import org.bogdan.remindme.R;
+
+import org.bogdan.remindme.adapter.TabsPagerFragmentAdapter;
+import com.vk.sdk.VKAccessToken;
+import com.vk.sdk.VKCallback;
+import com.vk.sdk.VKScope;
+import com.vk.sdk.VKSdk;
+import com.vk.sdk.api.VKError;
 
 /**
  * Created by Bodia on 09.06.2016.
@@ -42,10 +44,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_layout);
 
+        vkLogin();
         initToolbar();
         initNavigationView();
         initTabs();
+    }
 
+
+    private String[] vkScope = new String[]{VKScope.MESSAGES,VKScope.FRIENDS,VKScope.WALL};
+    private void vkLogin() {
+        //String[] fingetprints = VKUtil.getCertificateFingerprint(this,this.getPackageName());     get VK fingerprint
+        VKSdk.login(this,vkScope);
     }
 
     private void initTabs() {
@@ -99,4 +108,25 @@ public class MainActivity extends AppCompatActivity {
     private void showNotificationTab(){
         viewPager.setCurrentItem(TAB_TWO);
     }
+
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
+            @Override
+            public void onResult(VKAccessToken res) {
+// Пользователь успешно авторизовался
+            }
+            @Override
+            public void onError(VKError error) {
+// Произошла ошибка авторизации (например, пользователь запретил авторизацию)
+            }
+        })) {
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+
+
 }

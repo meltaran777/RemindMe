@@ -1,15 +1,14 @@
-package com.qoobico.remindme.adapter;
+package org.bogdan.remindme.adapter;
 
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.qoobico.remindme.R;
-import com.qoobico.remindme.dto.RemindDTO;
+import org.bogdan.remindme.R;
+import org.bogdan.remindme.dto.RemindDTO;
 
 import java.util.List;
 

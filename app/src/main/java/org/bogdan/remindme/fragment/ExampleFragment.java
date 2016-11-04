@@ -1,32 +1,29 @@
-package com.qoobico.remindme.fragment;
+package org.bogdan.remindme.fragment;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.qoobico.remindme.R;
+import org.bogdan.remindme.R;
 
 /**
  * Created by Bodia on 28.10.2016.
  */
-public class IdeasFragment extends AbstractTabFragment{
+public class ExampleFragment extends Fragment{
     private static final int LAYOUT=R.layout.fragment_example_layout;
+    private View view;
 
-    private static String title;
-
-    public static IdeasFragment getInstance(Context context){
+    public static ExampleFragment getInstance(){
         Bundle args=new Bundle();
-        IdeasFragment fragment=new IdeasFragment();
+        ExampleFragment fragment=new ExampleFragment();
         fragment.setArguments(args);
-        fragment.setContext(context);
-        fragment.setTitle(context.getString(R.string.tab_item_Ideas));
-
 
         return  fragment;
     }
+
 
     @Nullable
     @Override
@@ -35,9 +32,4 @@ public class IdeasFragment extends AbstractTabFragment{
         return view;
 
     }
-
-    public void setContext(Context context) {
-        this.context = context;
-    }
-
 }

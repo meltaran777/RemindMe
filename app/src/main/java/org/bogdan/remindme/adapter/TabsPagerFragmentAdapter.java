@@ -1,16 +1,15 @@
-package com.qoobico.remindme.adapter;
+package org.bogdan.remindme.adapter;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import com.qoobico.remindme.fragment.AbstractTabFragment;
-import com.qoobico.remindme.fragment.BirthdayFragment;
-import com.qoobico.remindme.fragment.ExampleFragment;
-import com.qoobico.remindme.fragment.HistoryFragment;
-import com.qoobico.remindme.fragment.IdeasFragment;
-import com.qoobico.remindme.fragment.TODOFragment;
+import org.bogdan.remindme.fragment.AbstractTabFragment;
+import org.bogdan.remindme.fragment.BirthdayFragment;
+import org.bogdan.remindme.fragment.HistoryFragment;
+import org.bogdan.remindme.fragment.IdeasFragment;
+import org.bogdan.remindme.fragment.TODOFragment;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -46,9 +45,9 @@ public class TabsPagerFragmentAdapter extends FragmentPagerAdapter {
 
     private void initTabsMap() {
         tabsMap = new HashMap<>();
-        tabsMap.put(0,BirthdayFragment.getInstance(context));
-        tabsMap.put(1,HistoryFragment.getInstance(context));
-        tabsMap.put(2,IdeasFragment.getInstance(context));
-        tabsMap.put(3,TODOFragment.getInstance(context));
+        tabsMap.put(0, BirthdayFragment.getInstance(context));
+        tabsMap.put(1, HistoryFragment.getInstance(context));
+        tabsMap.put(2, IdeasFragment.getInstance(context));
+        tabsMap.put(3, TODOFragment.getInstance(context));
     }
 }

@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">RemindMe</string>
+
     <string name="str_search">Search</string>
     <string name="str_favourite">Favourite</string>
     <string name="str_remind">Reminds</string>
@@ -15,5 +16,7 @@
     <string name="tab_item_Ideas">Ideas</string>
     <string name="tab_item_TODO">TODO</string>
     <string name="tab_item_Birthday">Birthday</string>
+
+    <integer name="com_vk_sdk_AppId">5709828</integer>
 
 </resources>

@@ -1,4 +1,4 @@
-package com.qoobico.remindme.dto;
+package org.bogdan.remindme.dto;
 
 /**
  * Created by Bodia on 30.10.2016.

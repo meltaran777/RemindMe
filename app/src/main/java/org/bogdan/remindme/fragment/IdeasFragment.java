@@ -1,4 +1,4 @@
-package com.qoobico.remindme.fragment;
+package org.bogdan.remindme.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -7,22 +7,22 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.qoobico.remindme.R;
+import org.bogdan.remindme.R;
 
 /**
  * Created by Bodia on 28.10.2016.
  */
-public class TODOFragment extends AbstractTabFragment{
+public class IdeasFragment extends AbstractTabFragment{
     private static final int LAYOUT=R.layout.fragment_example_layout;
 
     private static String title;
 
-    public static TODOFragment getInstance(Context context){
+    public static IdeasFragment getInstance(Context context){
         Bundle args=new Bundle();
-        TODOFragment fragment=new TODOFragment();
+        IdeasFragment fragment=new IdeasFragment();
         fragment.setArguments(args);
         fragment.setContext(context);
-        fragment.setTitle(context.getString(R.string.tab_item_TODO));
+        fragment.setTitle(context.getString(R.string.tab_item_Ideas));
 
 
         return  fragment;

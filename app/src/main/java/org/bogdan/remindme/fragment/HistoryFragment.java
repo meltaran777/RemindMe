@@ -1,4 +1,4 @@
-package com.qoobico.remindme.fragment;
+package org.bogdan.remindme.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -9,9 +9,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.qoobico.remindme.R;
-import com.qoobico.remindme.adapter.RemindListAdapter;
-import com.qoobico.remindme.dto.RemindDTO;
+import org.bogdan.remindme.R;
+import org.bogdan.remindme.adapter.RemindListAdapter;
+import org.bogdan.remindme.dto.RemindDTO;
 
 import java.util.ArrayList;
 import java.util.List;

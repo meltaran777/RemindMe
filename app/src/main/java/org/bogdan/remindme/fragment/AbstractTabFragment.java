@@ -1,4 +1,4 @@
-package com.qoobico.remindme.fragment;
+package org.bogdan.remindme.fragment;
 
 import android.content.Context;
 import android.support.v4.app.Fragment;
