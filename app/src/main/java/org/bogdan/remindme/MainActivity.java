@@ -1,6 +1,5 @@
 package org.bogdan.remindme;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -9,17 +8,27 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import org.bogdan.remindme.R;
-
-import org.bogdan.remindme.adapter.TabsPagerFragmentAdapter;
-import com.vk.sdk.VKAccessToken;
-import com.vk.sdk.VKCallback;
 import com.vk.sdk.VKScope;
 import com.vk.sdk.VKSdk;
+import com.vk.sdk.api.VKApi;
+import com.vk.sdk.api.VKApiConst;
 import com.vk.sdk.api.VKError;
+import com.vk.sdk.api.VKParameters;
+import com.vk.sdk.api.VKRequest;
+import com.vk.sdk.api.VKResponse;
+import com.vk.sdk.api.model.VKApiUserFull;
+import com.vk.sdk.api.model.VKUsersArray;
+
+import org.bogdan.remindme.adapter.TabsPagerFragmentAdapter;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+
+import java.util.Collections;
 
 /**
  * Created by Bodia on 09.06.2016.
@@ -38,23 +47,23 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager viewPager;
     private NavigationView navigationView;
 
+
+
+    VKRequest getVKFriendsList = VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.AppDefault);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_layout);
 
+
+
         vkLogin();
+        vkRequestExecute(getVKFriendsList);
         initToolbar();
         initNavigationView();
         initTabs();
-    }
-
-
-    private String[] vkScope = new String[]{VKScope.MESSAGES,VKScope.FRIENDS,VKScope.WALL};
-    private void vkLogin() {
-        //String[] fingetprints = VKUtil.getCertificateFingerprint(this,this.getPackageName());     get VK fingerprint
-        VKSdk.login(this,vkScope);
     }
 
     private void initTabs() {
@@ -109,24 +118,71 @@ public class MainActivity extends AppCompatActivity {
         viewPager.setCurrentItem(TAB_TWO);
     }
 
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
-            @Override
-            public void onResult(VKAccessToken res) {
-// Пользователь успешно авторизовался
-            }
-            @Override
-            public void onError(VKError error) {
-// Произошла ошибка авторизации (например, пользователь запретил авторизацию)
-            }
-        })) {
-            super.onActivityResult(requestCode, resultCode, data);
-        }
+    private String[] vkScope = new String[]{VKScope.MESSAGES,VKScope.FRIENDS,VKScope.WALL};
+    private void vkLogin() {
+        //String[] fingetprints = VKUtil.getCertificateFingerprint(this,this.getPackageName());     get VK fingerprint
+        VKSdk.login(this,vkScope);
     }
 
+
+
+    private void vkRequestExecute(VKRequest currentRequest){
+        currentRequest.executeWithListener(new VKRequest.VKRequestListener() {
+            @Override
+            public void onComplete(VKResponse response) {
+                super.onComplete(response);
+                Log.d("VkDemoApp", "onComplete " + response);
+
+                VKUsersArray usersArray = (VKUsersArray) response.parsedModel;
+                UserVK.getUsersList().clear();
+                final String[] formats = new String[]{"dd.MM.yyyy", "dd.MM"};
+
+                for (VKApiUserFull userFull : usersArray) {
+
+                    DateTime birthDate = null;
+                    String format = null;
+                    String avatarURL = null;
+
+                    if (!TextUtils.isEmpty(userFull.photo_100)) avatarURL=userFull.photo_100;
+
+                    if (!TextUtils.isEmpty(userFull.bdate)) {
+                        for (int i = 0; i < formats.length; i++) {
+                            format = formats[i];
+                            try {
+                                birthDate = DateTimeFormat.forPattern(format).parseDateTime(userFull.bdate);
+                                UserVK.getUsersList().add(new UserVK(userFull.toString(), birthDate, format,avatarURL));
+                            } catch (Exception ignored) {
+                            }
+                            if (birthDate != null) {
+                                break;
+                            }
+                        }
+
+                    }
+                    //UserVK.getUsersList().add(new UserVK(userFull.toString(), birthDate, format,avatarURL));
+                }
+                Collections.sort(UserVK.getUsersList());
+            }
+
+            @Override
+            public void attemptFailed(VKRequest request, int attemptNumber, int totalAttempts) {
+                super.attemptFailed(request, attemptNumber, totalAttempts);
+                Log.d("VkDemoApp", "attemptFailed " + request + " " + attemptNumber + " " + totalAttempts);
+            }
+
+            @Override
+            public void onError(VKError error) {
+                super.onError(error);
+                Log.d("VkDemoApp", "onError: " + error);
+            }
+
+            @Override
+            public void onProgress(VKRequest.VKProgressType progressType, long bytesLoaded, long bytesTotal) {
+                super.onProgress(progressType, bytesLoaded, bytesTotal);
+                Log.d("VkDemoApp", "onProgress " + progressType + " " + bytesLoaded + " " + bytesTotal);
+            }
+        });
+    }
 
 
 }

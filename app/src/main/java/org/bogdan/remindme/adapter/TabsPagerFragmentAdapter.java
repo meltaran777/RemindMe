@@ -6,8 +6,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import org.bogdan.remindme.fragment.AbstractTabFragment;
-import org.bogdan.remindme.fragment.BirthdayFragment;
-import org.bogdan.remindme.fragment.HistoryFragment;
+import org.bogdan.remindme.fragment.BirhtdayFragment;
 import org.bogdan.remindme.fragment.IdeasFragment;
 import org.bogdan.remindme.fragment.TODOFragment;
 
@@ -45,9 +44,8 @@ public class TabsPagerFragmentAdapter extends FragmentPagerAdapter {
 
     private void initTabsMap() {
         tabsMap = new HashMap<>();
-        tabsMap.put(0, BirthdayFragment.getInstance(context));
-        tabsMap.put(1, HistoryFragment.getInstance(context));
-        tabsMap.put(2, IdeasFragment.getInstance(context));
-        tabsMap.put(3, TODOFragment.getInstance(context));
+        tabsMap.put(0, BirhtdayFragment.getInstance(context));
+        tabsMap.put(1, IdeasFragment.getInstance(context));
+        tabsMap.put(2, TODOFragment.getInstance(context));
     }
 }
