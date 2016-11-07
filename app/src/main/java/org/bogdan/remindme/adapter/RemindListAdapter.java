@@ -44,7 +44,6 @@ public class RemindListAdapter extends RecyclerView.Adapter<RemindListAdapter.Re
     public void onBindViewHolder(RemindViewHollder holder, int position) {
 
         if(data !=null) {
-
             if(data.get(position).getAvatarURL()!=null){
                 new DownloadImageTask(holder.imageView).execute(data.get(position).getAvatarURL());
             }
@@ -52,11 +51,11 @@ public class RemindListAdapter extends RecyclerView.Adapter<RemindListAdapter.Re
             if(data.get(position).getDateFormat()!=null){
                 DateTimeFormatter dateTimeFormat = DateTimeFormat.forPattern(data.get(position).getDateFormat());
                 holder.title.setText(data.get(position).getName()+" "+data.get(position).getBirthDate().toString(dateTimeFormat)+
-                        "\n"+" to next birht "+UserVK.timeToNextBirht(data.get(position)));
+                        "\n"+"next birht: "+UserVK.getTimeToNextBirht(data.get(position))+
+                        "\n"+"in day:"+UserVK.getDayToNextBirht(data.get(position).getBirthDate()));
             }else holder.title.setText(data.get(position).getName()+
-                    "\n"+" to next birht "+UserVK.timeToNextBirht(data.get(position)));
+                    "\n"+"next birht: "+UserVK.getTimeToNextBirht(data.get(position)));
         }
-
     }
 
     @Override

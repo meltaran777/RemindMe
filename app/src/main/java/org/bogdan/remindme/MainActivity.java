@@ -159,7 +159,6 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                     }
-                    //UserVK.getUsersList().add(new UserVK(userFull.toString(), birthDate, format,avatarURL));
                 }
                 Collections.sort(UserVK.getUsersList());
             }
