@@ -12,6 +12,7 @@
         android:layout_gravity="start"
         android:id="@+id/navigation"
         app:headerLayout="@layout/navigation_header"
+        app:menu="@menu/menu_navigation"
         android:layout_width="wrap_content"
         android:layout_height="match_parent">
 

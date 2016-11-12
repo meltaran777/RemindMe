@@ -1,5 +1,8 @@
 package org.bogdan.remindme;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.content.BroadcastReceiver;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -25,6 +28,7 @@ import com.vk.sdk.api.model.VKApiUserFull;
 import com.vk.sdk.api.model.VKUsersArray;
 
 import org.bogdan.remindme.adapter.TabsPagerFragmentAdapter;
+import org.bogdan.remindme.task.DownloadImageTask;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
@@ -46,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private NavigationView navigationView;
+
+
 
 
 
@@ -92,7 +98,6 @@ public class MainActivity extends AppCompatActivity {
     private void initNavigationView(){
         drawerLayout=(DrawerLayout) findViewById(R.id.DrawerLayout);
 
-
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,drawerLayout,toolbar, R.string.view_navigation_open,R.string.view_navigation_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
@@ -101,17 +106,17 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
+                Log.i("navigationView"," onItemSelected");
                 drawerLayout.closeDrawers();
                 switch (item.getItemId()){
                     case R.id.menu_item_notification:
+                        Log.i("navigationView"," case");
                         showNotificationTab();
-                        Toast.makeText(getApplicationContext(),"",Toast.LENGTH_SHORT).show();
                         break;
                 }
                 return true;
             }
         });
-        navigationView.inflateMenu(R.menu.menu_navigation);
     }
 
     private void showNotificationTab(){
@@ -121,21 +126,23 @@ public class MainActivity extends AppCompatActivity {
     private String[] vkScope = new String[]{VKScope.MESSAGES,VKScope.FRIENDS,VKScope.WALL};
     private void vkLogin() {
         //String[] fingetprints = VKUtil.getCertificateFingerprint(this,this.getPackageName());     get VK fingerprint
-        VKSdk.login(this,vkScope);
+        if(!VKSdk.isLoggedIn()) VKSdk.login(this,vkScope);
     }
 
 
 
     private void vkRequestExecute(VKRequest currentRequest){
+
         currentRequest.executeWithListener(new VKRequest.VKRequestListener() {
             @Override
             public void onComplete(VKResponse response) {
                 super.onComplete(response);
-                Log.d("VkDemoApp", "onComplete " + response);
+                Log.d("VkApp", "onComplete " + response);
 
                 VKUsersArray usersArray = (VKUsersArray) response.parsedModel;
                 UserVK.getUsersList().clear();
                 final String[] formats = new String[]{"dd.MM.yyyy", "dd.MM"};
+                int notifId=0;
 
                 for (VKApiUserFull userFull : usersArray) {
 
@@ -151,6 +158,8 @@ public class MainActivity extends AppCompatActivity {
                             try {
                                 birthDate = DateTimeFormat.forPattern(format).parseDateTime(userFull.bdate);
                                 UserVK.getUsersList().add(new UserVK(userFull.toString(), birthDate, format,avatarURL));
+                                NotificationPublisher.scheduleNotification(getApplicationContext(),dayToMillis(UserVK.getDayToNextBirht(birthDate)),notifId,avatarURL);
+
                             } catch (Exception ignored) {
                             }
                             if (birthDate != null) {
@@ -159,29 +168,43 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                     }
+
+                    notifId++;
                 }
                 Collections.sort(UserVK.getUsersList());
+                NotificationPublisher.scheduleNotification(getApplicationContext(),100000,0,UserVK.getUsersList().get(0).getAvatarURL()); //test Notification
+
             }
 
             @Override
             public void attemptFailed(VKRequest request, int attemptNumber, int totalAttempts) {
                 super.attemptFailed(request, attemptNumber, totalAttempts);
-                Log.d("VkDemoApp", "attemptFailed " + request + " " + attemptNumber + " " + totalAttempts);
+                Log.d("VkApp", "attemptFailed " + request + " " + attemptNumber + " " + totalAttempts);
             }
 
             @Override
             public void onError(VKError error) {
                 super.onError(error);
-                Log.d("VkDemoApp", "onError: " + error);
+                Log.d("VkApp", "onError: " + error);
             }
 
             @Override
             public void onProgress(VKRequest.VKProgressType progressType, long bytesLoaded, long bytesTotal) {
                 super.onProgress(progressType, bytesLoaded, bytesTotal);
-                Log.d("VkDemoApp", "onProgress " + progressType + " " + bytesLoaded + " " + bytesTotal);
+                Log.d("VkApp", "onProgress " + progressType + " " + bytesLoaded + " " + bytesTotal);
             }
         });
     }
 
+
+    private long dayToMillis(int day){
+        DateTime now = DateTime.now();
+        int hours,minute,second;
+        hours = now.getHourOfDay();
+        minute = now.getMinuteOfHour();
+        second = now.getSecondOfMinute();
+        long millis = day*86400000-(hours*3600000+minute*60000+second*1000);
+        return millis;
+    }
 
 }
