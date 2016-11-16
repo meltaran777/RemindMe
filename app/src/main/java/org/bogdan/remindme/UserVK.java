@@ -86,6 +86,25 @@ public class UserVK implements Comparable<UserVK> {
         }
     }
 
+    public static LocalDate getNextBirthDate(DateTime birthDate) {
+
+        LocalDate dateOfBirth =birthDate.toLocalDate();
+        LocalDate currentDate = new LocalDate();
+        // Take birthDay  and birthMonth  from dateOfBirth
+        int birthDay = dateOfBirth.getDayOfMonth();
+        int birthMonth = dateOfBirth.getMonthOfYear();
+        // Current year's birthday
+        LocalDate currentYearBirthDay = new LocalDate().withDayOfMonth(birthDay)
+                .withMonthOfYear(birthMonth);
+
+        if (currentYearBirthDay.isAfter(currentDate)) {
+            return currentYearBirthDay;
+        }else{
+            LocalDate nextYearBirthDay =currentYearBirthDay.plusYears(1);
+            return nextYearBirthDay;
+        }
+    }
+
 
     public static int getDayToNextBirht(DateTime birthDate){
 

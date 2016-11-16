@@ -12,17 +12,17 @@ import org.bogdan.remindme.R;
 /**
  * Created by Bodia on 28.10.2016.
  */
-public class IdeasFragment extends AbstractTabFragment{
+public class AlarmClockFragment extends AbstractTabFragment{
     private static final int LAYOUT=R.layout.fragment_example_layout;
 
     private static String title;
 
-    public static IdeasFragment getInstance(Context context){
+    public static AlarmClockFragment getInstance(Context context){
         Bundle args=new Bundle();
-        IdeasFragment fragment=new IdeasFragment();
+        AlarmClockFragment fragment=new AlarmClockFragment();
         fragment.setArguments(args);
         fragment.setContext(context);
-        fragment.setTitle(context.getString(R.string.tab_item_Ideas));
+        fragment.setTitle(context.getString(R.string.tab_item_Alarm_Clock));
 
 
         return  fragment;

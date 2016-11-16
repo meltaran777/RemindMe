@@ -7,8 +7,8 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 import org.bogdan.remindme.fragment.AbstractTabFragment;
 import org.bogdan.remindme.fragment.BirhtdayFragment;
-import org.bogdan.remindme.fragment.IdeasFragment;
-import org.bogdan.remindme.fragment.TODOFragment;
+import org.bogdan.remindme.fragment.CalendarFragment;
+import org.bogdan.remindme.fragment.AlarmClockFragment;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,7 +45,7 @@ public class TabsPagerFragmentAdapter extends FragmentPagerAdapter {
     private void initTabsMap() {
         tabsMap = new HashMap<>();
         tabsMap.put(0, BirhtdayFragment.getInstance(context));
-        tabsMap.put(1, IdeasFragment.getInstance(context));
-        tabsMap.put(2, TODOFragment.getInstance(context));
+        tabsMap.put(1, CalendarFragment.getInstance(context));
+        tabsMap.put(2, AlarmClockFragment.getInstance(context));
     }
 }

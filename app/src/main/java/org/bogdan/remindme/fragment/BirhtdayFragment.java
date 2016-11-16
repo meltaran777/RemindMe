@@ -9,17 +9,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.bogdan.remindme.MainActivity;
 import org.bogdan.remindme.R;
 import org.bogdan.remindme.UserVK;
 import org.bogdan.remindme.adapter.RemindListAdapter;
-
-import java.util.Collections;
 
 /**
  * Created by Bodia on 28.10.2016.
  */
 public class BirhtdayFragment extends AbstractTabFragment{
-    private static final int LAYOUT=R.layout.fragment_birhtday;
+    private static final int LAYOUT=R.layout.birthday_fragment_layout;
 
     private static String title;
 
@@ -30,7 +29,6 @@ public class BirhtdayFragment extends AbstractTabFragment{
         fragment.setContext(context);
         fragment.setTitle(context.getString(R.string.tab_item_Birthday));
 
-
         return  fragment;
     }
 
@@ -40,10 +38,12 @@ public class BirhtdayFragment extends AbstractTabFragment{
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(LAYOUT, container, false);
+
         RecyclerView recyclerView;
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setAdapter(new RemindListAdapter(UserVK.getUsersList()));
+
         return view;
     }
 

@@ -10,9 +10,14 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.RingtoneManager;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
+
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import org.bogdan.remindme.task.DownloadImageTask;
 
@@ -40,18 +45,36 @@ public class NotificationPublisher extends BroadcastReceiver {
         notificationManager.notify(notificationId, notification);
     }
 
+    private static NotificationCompat.Builder builder;
+
     public static void scheduleNotification(Context context, long delay, int notificationId, String largeIconUrl) {//delay is after how much time(in millis) from current time you want to schedule the notification
 
-
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context)
+        builder = new NotificationCompat.Builder(context)
                 .setContentTitle(context.getString(R.string.str_birthday))
                 .setContentText(UserVK.getUsersList().get(notificationId).getName())
                 .setAutoCancel(true)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
 
+        Picasso.with(context).load(largeIconUrl).into(new Target() {
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                builder.setLargeIcon(bitmap);
+            }
 
-        new DownloadImageTask(builder,context).execute(largeIconUrl); //Load avatar icon as notif big icon
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+
+
+            }
+
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+            }
+        });
+
+        //new DownloadImageTask(builder,context).execute(largeIconUrl); //Load avatar icon as notif big icon
 
         Intent intent = new Intent(context, MainActivity.class);
         PendingIntent activity = PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -84,6 +107,8 @@ public class NotificationPublisher extends BroadcastReceiver {
             return null;
         }
     }
+
+
 
 
 

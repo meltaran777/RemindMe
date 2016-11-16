@@ -1,11 +1,7 @@
 package org.bogdan.remindme.adapter;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.AsyncTask;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,13 +9,13 @@ import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
 import org.bogdan.remindme.R;
 import org.bogdan.remindme.UserVK;
-import org.bogdan.remindme.task.DownloadImageTask;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,8 +24,12 @@ import java.util.List;
  */
 public class RemindListAdapter extends RecyclerView.Adapter<RemindListAdapter.RemindViewHollder> {
 
-    private List<UserVK> data=new ArrayList<>();
+    private static final int IMG_WIDTH = 150;
+    private static final int IMG_HIGH = 150;
 
+    private View view;
+
+    private List<UserVK> data=new ArrayList<>();
 
     public RemindListAdapter(List<UserVK> data) {
         this.data = data;
@@ -37,27 +37,29 @@ public class RemindListAdapter extends RecyclerView.Adapter<RemindListAdapter.Re
 
     @Override
     public RemindViewHollder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.remind_item,parent,false);
+        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.remind_item,parent,false);
         return  new RemindViewHollder(view);
     }
 
     @Override
     public void onBindViewHolder(RemindViewHollder holder, int position) {
 
-        if(data !=null) {
+        if(!data.isEmpty()) {
             if(data.get(position).getAvatarURL()!=null){
-                new DownloadImageTask(holder.imageView).execute(data.get(position).getAvatarURL());
+                //new DownloadImageTask(holder.imageView).execute(data.get(position).getAvatarURL());
+                Picasso.with(view.getContext()).load(data.get(position).getAvatarURL()).resize(IMG_WIDTH, IMG_HIGH).into(holder.imageView);
             }
 
             if(data.get(position).getDateFormat()!=null){
                 DateTimeFormatter dateTimeFormat = DateTimeFormat.forPattern(data.get(position).getDateFormat());
-                holder.title.setText(data.get(position).getName()+" "+data.get(position).getBirthDate().toString(dateTimeFormat)+
-                        "\n"+"next birht: "+UserVK.getTimeToNextBirht(data.get(position))+
-                        "\n"+"in day:"+UserVK.getDayToNextBirht(data.get(position).getBirthDate()));
-            }else holder.title.setText(data.get(position).getName()+
-                    "\n"+"next birht: "+UserVK.getTimeToNextBirht(data.get(position)));
+                holder.title.setText(data.get(position).getName()+"\n"+"birht date: "+data.get(position).getBirthDate().toString(dateTimeFormat)+
+                        "\n"+"next birht: "+UserVK.getTimeToNextBirht(data.get(position)));
+            }
+
         }
     }
+
+
 
     @Override
     public int getItemCount() {
@@ -80,8 +82,4 @@ public class RemindListAdapter extends RecyclerView.Adapter<RemindListAdapter.Re
             checkBoxCongratulations = (CheckBox) itemView.findViewById(R.id.checkboxCongratulations);
         }
     }
-
-
-
-
 }

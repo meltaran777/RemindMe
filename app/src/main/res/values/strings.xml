@@ -14,8 +14,8 @@
     <string name="view_navigation_close">Close</string>
 
     <string name="tab_item_History">History</string>
-    <string name="tab_item_Ideas">Ideas</string>
-    <string name="tab_item_TODO">TODO</string>
+    <string name="tab_item_Calendar">Calendar</string>
+    <string name="tab_item_Alarm_Clock">Alarm Clock</string>
     <string name="tab_item_Birthday">Birthday</string>
 
     <integer name="com_vk_sdk_AppId">5709828</integer>
