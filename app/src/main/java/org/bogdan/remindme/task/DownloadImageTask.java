@@ -1,6 +1,5 @@
 package org.bogdan.remindme.task;
 
-import android.app.Notification;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -10,10 +9,6 @@ import android.support.v4.app.NotificationCompat;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.widget.ImageView;
-
-import org.bogdan.remindme.MainActivity;
-import org.bogdan.remindme.fragment.BirhtdayFragment;
-import org.bogdan.remindme.fragment.ExampleFragment;
 
 import java.io.InputStream;
 

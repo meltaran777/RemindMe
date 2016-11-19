@@ -1,4 +1,4 @@
-package org.bogdan.remindme;
+package org.bogdan.remindme.util;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -9,17 +9,17 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.RingtoneManager;
 import android.os.SystemClock;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
-import org.bogdan.remindme.task.DownloadImageTask;
+import org.bogdan.remindme.activities.MainActivity;
+import org.bogdan.remindme.R;
+import org.bogdan.remindme.content.UserVK;
 
 import java.io.IOException;
 import java.io.InputStream;

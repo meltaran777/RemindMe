@@ -9,10 +9,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import org.bogdan.remindme.MainActivity;
 import org.bogdan.remindme.R;
-import org.bogdan.remindme.UserVK;
-import org.bogdan.remindme.adapter.RemindListAdapter;
+import org.bogdan.remindme.content.UserVK;
+import org.bogdan.remindme.adapter.UserListAdapter;
 
 /**
  * Created by Bodia on 28.10.2016.
@@ -42,7 +41,7 @@ public class BirhtdayFragment extends AbstractTabFragment{
         RecyclerView recyclerView;
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(new RemindListAdapter(UserVK.getUsersList()));
+        recyclerView.setAdapter(new UserListAdapter(UserVK.getUsersList()));
 
         return view;
     }

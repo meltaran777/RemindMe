@@ -14,7 +14,7 @@
 
 
         <receiver
-            android:name="org.bogdan.remindme.NotificationPublisher"
+            android:name="org.bogdan.remindme.util.NotificationPublisher"
             android:enabled="true"
             android:exported="true" >
             <intent-filter>
@@ -22,7 +22,14 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".MainActivity">
+        <receiver android:name=".util.AlarmRecevier">
+        </receiver>
+
+        <service
+            android:name=".util.RingtoneServices"
+            android:enabled="true"/>
+
+        <activity android:name=".activities.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"></action>
                 <category android:name="android.intent.category.LAUNCHER"></category>

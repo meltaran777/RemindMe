@@ -1,15 +1,10 @@
-package org.bogdan.remindme;
+package org.bogdan.remindme.activities;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.content.BroadcastReceiver;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -21,7 +16,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
-import android.widget.Toast;
+import android.widget.ProgressBar;
 
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKCallback;
@@ -36,22 +31,20 @@ import com.vk.sdk.api.VKResponse;
 import com.vk.sdk.api.model.VKApiUserFull;
 import com.vk.sdk.api.model.VKUsersArray;
 
-import org.bogdan.remindme.adapter.TabsPagerFragmentAdapter;
+import net.danlew.android.joda.JodaTimeAndroid;
+
+import org.bogdan.remindme.R;
+import org.bogdan.remindme.content.UserVK;
+import org.bogdan.remindme.adapter.TabsFragmentAdapter;
 import org.bogdan.remindme.database.DBHelper;
-import org.bogdan.remindme.task.DownloadImageTask;
+import org.bogdan.remindme.util.NotificationPublisher;
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
-import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.TimeZone;
 
 /**
  * Created by Bodia on 09.06.2016.
@@ -68,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private NavigationView navigationView;
+    private ProgressBar progressBar;
 
     private static FloatingActionButton fab;
 
@@ -79,11 +73,14 @@ public class MainActivity extends AppCompatActivity {
         setTheme(R.style.AppDefault);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_layout);
+        JodaTimeAndroid.init(this);
+
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
         fab = (FloatingActionButton) findViewById(R.id.FAB);
 
-        vkLogin();
         initDB();
+        vkLogin();
         initToolbar();
         initNavigationView();
         if(readDB()) {
@@ -96,7 +93,10 @@ public class MainActivity extends AppCompatActivity {
         if(!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
             @Override
             public void onResult(VKAccessToken res) {
-                vkRequestExecute(getVKFriendsList);
+                initDB();
+                if(!readDB()) {
+                    vkRequestExecute(getVKFriendsList);
+                }
             }
 
             @Override
@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
         viewPager =(ViewPager) findViewById(R.id.ViewPager);
         tabLayout =(TabLayout) findViewById(R.id.TabLayout);
 
-        TabsPagerFragmentAdapter adapter = new TabsPagerFragmentAdapter(this,getSupportFragmentManager());
+        TabsFragmentAdapter adapter = new TabsFragmentAdapter(this,getSupportFragmentManager());
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
     }
@@ -221,6 +221,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void vkRequestExecute(VKRequest currentRequest){
         Log.d("VkAppDP", "vkRequestExecute ");
+
+        progressBar.setVisibility(ProgressBar.VISIBLE);
+
         currentRequest.executeWithListener(new VKRequest.VKRequestListener() {
             @Override
             public void onComplete(VKResponse response) {
@@ -256,7 +259,8 @@ public class MainActivity extends AppCompatActivity {
                 Collections.sort(UserVK.getUsersList());
                 insertDB();
                 closeDB();
-                sheduleNotificationFromUserList();
+                createNotificationFromUserList();
+                progressBar.setVisibility(ProgressBar.INVISIBLE);
                 initTabs();
             }
 
@@ -280,33 +284,31 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void sheduleNotificationFromUserList(){
+    private void createNotificationFromUserList(){
 
         List<UserVK> userVKList=UserVK.getUsersList();
 
         if(!userVKList.isEmpty()) {
 
-            Log.d("VkAppDP", "sheduleNotificationFromUserList ");
+            Log.d("VkAppDP", "createNotificationFromUserList ");
 
             for (int position = 0; position < userVKList.size(); position++) {
 
                 long day = UserVK.getDayToNextBirht(userVKList.get(position).getBirthDate());
                 NotificationPublisher.scheduleNotification(getApplicationContext(), dayToMillis(day), position, userVKList.get(position).getAvatarURL());
             }
-        }else Log.d("VkAppDP", "sheduleNotificationFromUserList -- Empty ");
+        }else Log.d("VkAppDP", "createNotificationFromUserList -- Empty ");
     }
 
 
     private long dayToMillis(long day){
 
-        DateTime now = new DateTime(System.currentTimeMillis());
+        LocalDateTime now = new LocalDateTime();
 
         int hours,minute,second;
         hours = now.getHourOfDay();
         minute = now.getMinuteOfHour();
         second = now.getSecondOfMinute();
-
-        Log.d("Hours",""+hours);
 
         long millis = day*86400000-(3600000*hours+60000*minute+1000*second);
         return millis;

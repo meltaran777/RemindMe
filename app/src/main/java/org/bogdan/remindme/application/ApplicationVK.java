@@ -2,7 +2,7 @@ package org.bogdan.remindme.application;
 
 import android.content.Intent;
 
-import org.bogdan.remindme.MainActivity;
+import org.bogdan.remindme.activities.MainActivity;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKAccessTokenTracker;
 import com.vk.sdk.VKSdk;

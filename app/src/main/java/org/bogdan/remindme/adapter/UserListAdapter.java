@@ -12,7 +12,7 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import org.bogdan.remindme.R;
-import org.bogdan.remindme.UserVK;
+import org.bogdan.remindme.content.UserVK;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Created by Bodia on 30.10.2016.
  */
-public class RemindListAdapter extends RecyclerView.Adapter<RemindListAdapter.RemindViewHollder> {
+public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.RemindViewHollder> {
 
     private static final int IMG_WIDTH = 150;
     private static final int IMG_HIGH = 150;
@@ -31,13 +31,13 @@ public class RemindListAdapter extends RecyclerView.Adapter<RemindListAdapter.Re
 
     private List<UserVK> data=new ArrayList<>();
 
-    public RemindListAdapter(List<UserVK> data) {
+    public UserListAdapter(List<UserVK> data) {
         this.data = data;
     }
 
     @Override
     public RemindViewHollder onCreateViewHolder(ViewGroup parent, int viewType) {
-        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.remind_item,parent,false);
+        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.userlist_item,parent,false);
         return  new RemindViewHollder(view);
     }
 
@@ -61,6 +61,8 @@ public class RemindListAdapter extends RecyclerView.Adapter<RemindListAdapter.Re
 
 
 
+
+
     @Override
     public int getItemCount() {
         return data == null ? 0 : data.size();
@@ -71,7 +73,7 @@ public class RemindListAdapter extends RecyclerView.Adapter<RemindListAdapter.Re
         TextView title;
         ImageView imageView;
         CheckBox checkBoxVIP;
-        CheckBox checkBoxCongratulations;
+
         public RemindViewHollder(View itemView) {
             super(itemView);
 
@@ -79,7 +81,6 @@ public class RemindListAdapter extends RecyclerView.Adapter<RemindListAdapter.Re
             title = (TextView) itemView.findViewById(R.id.TextViewTitle);
             imageView = (ImageView) itemView.findViewById(R.id.imageViewAvatarVK);
             checkBoxVIP = (CheckBox) itemView.findViewById(R.id.checkboxVIP);
-            checkBoxCongratulations = (CheckBox) itemView.findViewById(R.id.checkboxCongratulations);
         }
     }
 }

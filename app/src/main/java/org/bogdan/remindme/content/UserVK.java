@@ -1,7 +1,6 @@
-package org.bogdan.remindme;
+package org.bogdan.remindme.content;
 
 import org.joda.time.DateTime;
-import org.joda.time.Days;
 import org.joda.time.LocalDate;
 import org.joda.time.Period;
 import org.joda.time.PeriodType;
