@@ -1,41 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="org.bogdan.remindme">
 
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"></uses-permission>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
 
     <application
+        android:name=".application.ApplicationVK"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
-        android:name=".application.ApplicationVK">
-
-
+        android:theme="@style/AppDefault">
         <receiver
-            android:name="org.bogdan.remindme.util.NotificationPublisher"
+            android:name=".util.NotificationPublisher"
             android:enabled="true"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="org.bogdan.remindme.NotificationPublisher" />
             </intent-filter>
         </receiver>
-
-        <receiver android:name=".util.AlarmRecevier">
-        </receiver>
+        <receiver android:name=".util.AlarmRecevier" />
 
         <service
             android:name=".util.RingtoneServices"
-            android:enabled="true"/>
+            android:enabled="true" />
 
         <activity android:name=".activities.MainActivity">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"></action>
-                <category android:name="android.intent.category.LAUNCHER"></category>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <activity
+            android:name=".activities.SettingsActivity"
+            android:label="@string/title_activity_settings" />
+        <activity android:name=".activities.AddAlarmActivity"></activity>
     </application>
 
 </manifest>

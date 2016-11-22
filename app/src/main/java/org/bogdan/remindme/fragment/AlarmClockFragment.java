@@ -11,18 +11,28 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
 import org.bogdan.remindme.R;
+import org.bogdan.remindme.activities.AddAlarmActivity;
 import org.bogdan.remindme.activities.MainActivity;
+import org.bogdan.remindme.content.AlarmClock;
 import org.bogdan.remindme.util.AlarmRecevier;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Created by Bodia on 28.10.2016.
@@ -32,10 +42,11 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
 
     private static String title;
 
-    private TimePicker timePicker;
-    private Button btnStop;
-    private Button btnStart;
-    private TextView textTime;
+    private Button btnAdd;
+    private ListView alarmList;
+
+    private SimpleAdapter adapter;
+    private int[] to = {R.id.textTime, R.id.textWhen, R.id.textDescription, R.id.cbEnable };
 
     public static AlarmClockFragment getInstance(Context context){
         Bundle args=new Bundle();
@@ -52,23 +63,35 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(LAYOUT, container, false);
 
-        timePicker = (TimePicker) view.findViewById(R.id.timePicker);
-        textTime = (TextView) view.findViewById(R.id.textView_time);
-        btnStart = (Button) view.findViewById(R.id.btn_start);
-        btnStop = (Button) view.findViewById(R.id.btn_stop);
+        btnAdd = (Button) view.findViewById(R.id.btn_add_alarm);
+        alarmList = (ListView) view.findViewById(R.id.listView_alarmList);
 
-        btnStart.setOnClickListener(this);
-        btnStop.setOnClickListener(this);
+        btnAdd.setOnClickListener(this);
+
+        adapter = new SimpleAdapter(getContext(),AlarmClock.getAlarmArrayMap(),R.layout.alarmlist_item,AlarmClock.getFrom(),to);
+        adapter.setViewBinder(new MyViewBinder());
+        alarmList.setAdapter(adapter);
 
         return view;
     }
 
-    private void setTimeText(String timeText){
-        textTime.setText(timeText);
-    }
 
-    public void setContext(Context context) {
-        this.context = context;
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (data == null) return;
+
+        boolean daysArray[] = data.getBooleanArrayExtra("arrayDayOfWeek");
+        int hour = data.getIntExtra("hour",0);
+        int minute = data.getIntExtra("minute",0);
+        String descString = data.getStringExtra("descText");
+
+        AlarmClock.getAlarmList().add(new AlarmClock(daysArray,hour,minute,descString));
+
+
+        adapter = new SimpleAdapter(getContext(),AlarmClock.getAlarmArrayMap(),R.layout.alarmlist_item,AlarmClock.getFrom(),to);
+        adapter.setViewBinder(new MyViewBinder());
+        alarmList.setAdapter(adapter);
     }
 
     @Override
@@ -81,39 +104,94 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
         AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
 
         switch (v.getId()){
-            case R.id.btn_start:
+            case R.id.btn_add_alarm:
+                Intent alarmAddIntent = new Intent(getContext(), AddAlarmActivity.class);
+                startActivityForResult(alarmAddIntent, 1);
+                break;
+        }
+    }
+
+
+    public void setContext(Context context) {
+        this.context = context;
+    }
+
+    private class MyViewBinder implements SimpleAdapter.ViewBinder {
+        @Override
+        public boolean setViewValue(View view, Object data, String textRepresentation) {
+            boolean[] alarmDays;
+            switch (view.getId()){
+                case R.id.textTime:
+                    String time = data.toString();
+                    ((TextView) view).setText(time);
+                    return true;
+                case R.id.textWhen:
+                    alarmDays = (boolean[]) data;
+                    ((TextView) view).setText("");
+                    for(int i=0;i<alarmDays.length;i++){
+                        boolean day=alarmDays[i];
+                        if(day == true) switch (i){
+                            case 0:
+                                ((TextView) view).setText(((TextView) view).getText()+"Mn ");
+                                break;
+                            case 1:
+                                ((TextView) view).setText(((TextView) view).getText()+"Ts ");
+                                break;
+                            case 2:
+                                ((TextView) view).setText(((TextView) view).getText()+"Wd ");
+                                break;
+                            case 3:
+                                ((TextView) view).setText(((TextView) view).getText()+"Th ");
+                                break;
+                            case 4:
+                                ((TextView) view).setText(((TextView) view).getText()+"Fr ");
+                                break;
+                            case 5:
+                                ((TextView) view).setText(((TextView) view).getText()+"St ");
+                                break;
+                            case 6:
+                                ((TextView) view).setText(((TextView) view).getText()+"Sn ");
+                                break;
+                        }
+                    }
+                   return true;
+                case R.id.textDescription:
+                    String description = data.toString();
+                    ((TextView) view).setText(description);
+                    return true;
+                case R.id.cbEnable:
+                    boolean checked = false;
+                    alarmDays = (boolean[]) data;
+                    for (int i=0; i<alarmDays.length; i++){
+                        if (alarmDays[i] == true) checked=true;
+                    }
+                    ((CheckBox)view).setChecked(checked);
+                    return true;
+            }
+            return false;
+        }
+    }
+    //Example use Intent,PendingIntent,BroadcastRecevier;
+    /*            case R.id.btn_start:
+                int hour=0;
+                int minute=0;
 
                 alarmIntent.putExtra("intentState",1);
                 alarmPendingIntent = PendingIntent.getBroadcast(getContext(),0,alarmIntent,PendingIntent.FLAG_CANCEL_CURRENT);
 
                 long delay = 0;
-                int hour = timePicker.getCurrentHour();
-                int minute = timePicker.getCurrentMinute();
                 String strMinute=String.valueOf(minute);
 
                 if(minute<10) strMinute = "0"+minute;
 
                 setTimeText("Start in: "+hour+":"+strMinute);
 
-                delay = (timePicker.getCurrentHour()-localTime.getHourOfDay())*3600000+
-                        (timePicker.getCurrentMinute()-localTime.getMinuteOfHour())*60000-
+                delay = (hour-localTime.getHourOfDay())*3600000+
+                        (minute-localTime.getMinuteOfHour())*60000-
                         (localTime.getSecondOfMinute()*1000)-
                         (localTime.getMillisOfSecond());
 
                 if(delay > 0) alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()+delay, alarmPendingIntent);
 
-                break;
-            case R.id.btn_stop:
-
-                alarmIntent = new Intent(getContext(), AlarmRecevier.class);
-                alarmIntent.putExtra("intentState",0);
-
-                alarmPendingIntent = PendingIntent.getBroadcast(getContext(),0,alarmIntent,PendingIntent.FLAG_CANCEL_CURRENT);
-
-                alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), alarmPendingIntent);
-
-                setTimeText("Stop");
-                break;
-        }
-    }
+                break;  */
 }

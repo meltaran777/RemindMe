@@ -2,6 +2,7 @@ package org.bogdan.remindme.activities;
 
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
 
@@ -49,7 +51,7 @@ import java.util.List;
 /**
  * Created by Bodia on 09.06.2016.
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final int TAB_ONE=0;
     private static final int TAB_TWO=1;
@@ -63,20 +65,20 @@ public class MainActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private ProgressBar progressBar;
 
-    private static FloatingActionButton fab;
+    private FloatingActionButton fab;
 
     DBHelper dbHelper = null;
     SQLiteDatabase database = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.AppDefault);
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        setTheme(R.style.AppDefault);
         setContentView(R.layout.main_layout);
         JodaTimeAndroid.init(this);
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-
         fab = (FloatingActionButton) findViewById(R.id.FAB);
 
         initDB();
@@ -88,6 +90,9 @@ public class MainActivity extends AppCompatActivity {
             closeDB();
         }
     }
+
+
+
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
@@ -106,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
         }))
             super.onActivityResult(requestCode, resultCode, data);
     }
+
 
     private boolean readDB() {
         Cursor cursor = database.query(DBHelper.TABLE_USERS ,null ,null ,null ,null ,null ,null);
@@ -128,7 +134,6 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }else return true;
     }
-
 
     private void initDB(){
         if(dbHelper == null) dbHelper = new DBHelper(getApplicationContext());
@@ -168,13 +173,16 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(viewPager);
     }
 
+
     private void initToolbar() {
         toolbar=(Toolbar) findViewById(R.id.Toolbar);
         toolbar.setTitle(R.string.app_name);
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                return false;
+                Intent settingsIntent = new Intent(getApplicationContext(),SettingsActivity.class);
+                startActivity(settingsIntent);
+                return true;
             }
         });
         toolbar.inflateMenu(R.menu.menu);
@@ -184,27 +192,27 @@ public class MainActivity extends AppCompatActivity {
     private void initNavigationView(){
         drawerLayout=(DrawerLayout) findViewById(R.id.DrawerLayout);
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,drawerLayout,toolbar, R.string.view_navigation_open,R.string.view_navigation_close);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout,toolbar, R.string.view_navigation_open,R.string.view_navigation_close);
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
         navigationView = (NavigationView) findViewById(R.id.navigation);
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(MenuItem item) {
-                Log.i("navigationView"," onItemSelected");
-                drawerLayout.closeDrawers();
-                switch (item.getItemId()){
-                    case R.id.menu_item_notification:
-                        Log.i("navigationView"," case");
-                        showNotificationTab();
-                        break;
-                }
-                return true;
-            }
-        });
+        navigationView.setNavigationItemSelectedListener(this);
     }
 
+
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        Log.i("navigationView"," onItemSelected");
+        drawerLayout.closeDrawers();
+        switch (item.getItemId()){
+            case R.id.menu_item_notification:
+                Log.i("navigationView"," case");
+                showNotificationTab();
+                break;
+        }
+        return true;
+    }
 
     private void showNotificationTab(){
         viewPager.setCurrentItem(TAB_TWO);
@@ -284,6 +292,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+
     private void createNotificationFromUserList(){
 
         List<UserVK> userVKList=UserVK.getUsersList();
@@ -300,7 +309,6 @@ public class MainActivity extends AppCompatActivity {
         }else Log.d("VkAppDP", "createNotificationFromUserList -- Empty ");
     }
 
-
     private long dayToMillis(long day){
 
         LocalDateTime now = new LocalDateTime();
@@ -313,9 +321,4 @@ public class MainActivity extends AppCompatActivity {
         long millis = day*86400000-(3600000*hours+60000*minute+1000*second);
         return millis;
     }
-
-    public static FloatingActionButton getFab() {
-        return fab;
-    }
-
 }
