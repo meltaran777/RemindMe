@@ -25,7 +25,7 @@ public class AlarmClock {
     private int hour;
     private int minute;
     private String description;
-    private static int id=0;
+    private static int id=-1;
 
     public AlarmClock(boolean checkedDays[], int hour , int minute, String description){
         this.alarmDays =checkedDays;
@@ -58,11 +58,10 @@ public class AlarmClock {
 
             int minute = getAlarmList().get(i).getMinute();
             int hour = getAlarmList().get(i).getHour();
-            String strMinute=String.valueOf(minute);
-            if(minute<10) strMinute = "0"+minute;
+            int arrayInt[] = {hour,minute};
 
             m = new HashMap<String, Object>();
-            m.put(ATTRIBUTE_NAME_TIME, String.valueOf(hour)+":"+strMinute);
+            m.put(ATTRIBUTE_NAME_TIME, arrayInt);
             m.put(ATTRIBUTE_NAME_WHEN, getAlarmList().get(i).getAlarmDays());
             m.put(ATTRIBUTE_NAME_DISC, getAlarmList().get(i).getDescription());
             m.put(ATTRIBUTE_NAME_ENABLE, getAlarmList().get(i).getAlarmDays());

@@ -57,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private static final int TAB_TWO=1;
     private static final int TAB_THREE=2;
     private static final int TAB_FOUR=3;
+    public static final String APP_TAG = "RemindMe" ;
 
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
@@ -64,8 +65,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private ViewPager viewPager;
     private NavigationView navigationView;
     private ProgressBar progressBar;
-
-    private FloatingActionButton fab;
 
     DBHelper dbHelper = null;
     SQLiteDatabase database = null;
@@ -79,7 +78,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         JodaTimeAndroid.init(this);
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        fab = (FloatingActionButton) findViewById(R.id.FAB);
 
         initDB();
         vkLogin();
@@ -114,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
     private boolean readDB() {
+        UserVK.getUsersList().clear();
         Cursor cursor = database.query(DBHelper.TABLE_USERS ,null ,null ,null ,null ,null ,null);
         if(cursor.moveToFirst()){
             int idIndex = cursor.getColumnIndex(DBHelper.KEY_ID);

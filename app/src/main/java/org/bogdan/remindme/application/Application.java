@@ -10,8 +10,7 @@ import com.vk.sdk.VKSdk;
 /**
  * Created by Bodia on 04.11.2016.
  */
-public class ApplicationVK extends android.app.Application {
-
+public class Application extends android.app.Application {
 
     @Override
     public void onCreate() {
@@ -26,7 +25,7 @@ public class ApplicationVK extends android.app.Application {
         @Override
         public void onVKAccessTokenChanged(VKAccessToken oldToken, VKAccessToken newToken) {
             if (newToken == null) {
-                Intent intent = new Intent(ApplicationVK.this, MainActivity.class);
+                Intent intent = new Intent(Application.this, MainActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
 // VKAccessToken is invalid

@@ -7,46 +7,42 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.widget.AdapterView;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.TimePicker;
 
 import org.bogdan.remindme.R;
 import org.bogdan.remindme.activities.AddAlarmActivity;
-import org.bogdan.remindme.activities.MainActivity;
+import org.bogdan.remindme.activities.AlarmDialogActivity;
 import org.bogdan.remindme.content.AlarmClock;
-import org.bogdan.remindme.util.AlarmRecevier;
-import org.joda.time.LocalDate;
-import org.joda.time.LocalDateTime;
+import org.bogdan.remindme.util.AlarmReceiver;
 import org.joda.time.LocalTime;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 
 /**
  * Created by Bodia on 28.10.2016.
  */
-public class AlarmClockFragment extends AbstractTabFragment implements View.OnClickListener {
+public class AlarmClockFragment extends AbstractTabFragment implements View.OnClickListener,AdapterView.OnItemClickListener {
     private static final int LAYOUT=R.layout.alarm_clock_fragment_layout;
 
     private static String title;
 
-    private Button btnAdd;
+    private FloatingActionButton btnAdd;
     private ListView alarmList;
 
     private SimpleAdapter adapter;
     private int[] to = {R.id.textTime, R.id.textWhen, R.id.textDescription, R.id.cbEnable };
+
+    AlarmManager alarmMgr;
 
     public static AlarmClockFragment getInstance(Context context){
         Bundle args=new Bundle();
@@ -63,14 +59,16 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(LAYOUT, container, false);
 
-        btnAdd = (Button) view.findViewById(R.id.btn_add_alarm);
+        btnAdd = (FloatingActionButton) view.findViewById(R.id.btn_add_alarm);
         alarmList = (ListView) view.findViewById(R.id.listView_alarmList);
 
         btnAdd.setOnClickListener(this);
 
-        adapter = new SimpleAdapter(getContext(),AlarmClock.getAlarmArrayMap(),R.layout.alarmlist_item,AlarmClock.getFrom(),to);
-        adapter.setViewBinder(new MyViewBinder());
-        alarmList.setAdapter(adapter);
+        alarmListSetAdapter();
+        alarmList.setOnItemClickListener(this);
+        alarmList.setItemsCanFocus(true);
+
+        alarmMgr = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
 
         return view;
     }
@@ -84,22 +82,38 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
         boolean daysArray[] = data.getBooleanArrayExtra("arrayDayOfWeek");
         int hour = data.getIntExtra("hour",0);
         int minute = data.getIntExtra("minute",0);
+        int id = data.getIntExtra("alarmId",-1);
         String descString = data.getStringExtra("descText");
 
-        AlarmClock.getAlarmList().add(new AlarmClock(daysArray,hour,minute,descString));
+        if (id >=0){
+            AlarmClock.getAlarmList().set(id,new AlarmClock(daysArray,hour,minute,descString));
+        }else AlarmClock.getAlarmList().add(new AlarmClock(daysArray,hour,minute,descString));
 
+        alarmListSetAdapter();
+    }
 
-        adapter = new SimpleAdapter(getContext(),AlarmClock.getAlarmArrayMap(),R.layout.alarmlist_item,AlarmClock.getFrom(),to);
+    private void alarmListSetAdapter(){
+        adapter = new SimpleAdapter(getContext(),AlarmClock.getAlarmArrayMap(),R.layout.alarmlist_item,AlarmClock.getFrom(),to){
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position,convertView,parent);
+                ViewGroup.LayoutParams params = view.getLayoutParams();
+                params.height = 65;
+                view.setLayoutParams(params);
+                return view;
+            }
+        };
         adapter.setViewBinder(new MyViewBinder());
         alarmList.setAdapter(adapter);
     }
+
 
     @Override
     public void onClick(View v) {
 
         LocalTime localTime = new LocalTime();
 
-        Intent alarmIntent = new Intent(getContext(), AlarmRecevier.class);
+        Intent alarmIntent = new Intent(getContext(), AlarmReceiver.class);
         PendingIntent alarmPendingIntent;
         AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(Context.ALARM_SERVICE);
 
@@ -111,19 +125,36 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
         }
     }
 
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Intent alarmEditIntent = new Intent(getContext(), AddAlarmActivity.class);
+        alarmEditIntent.putExtra("alarmID", position);
+        startActivityForResult(alarmEditIntent, 1);
+    }
 
     public void setContext(Context context) {
         this.context = context;
     }
 
-    private class MyViewBinder implements SimpleAdapter.ViewBinder {
+    private class MyViewBinder implements SimpleAdapter.ViewBinder,CompoundButton.OnCheckedChangeListener {
+        int hour = 0;
+        int minute = 0;
+        boolean[] alarmDays;
+        String description="";
+        Intent alarmIntent;
+        PendingIntent alarmPendingIntent;
         @Override
         public boolean setViewValue(View view, Object data, String textRepresentation) {
-            boolean[] alarmDays;
             switch (view.getId()){
                 case R.id.textTime:
-                    String time = data.toString();
-                    ((TextView) view).setText(time);
+                    int[] timeArray = (int[]) data;
+                    hour = timeArray[0];
+                    minute = timeArray[1];
+                    String strHour = String.valueOf(hour);
+                    String strMinute = String.valueOf(minute);
+                    if (minute<10) strMinute = "0"+minute;
+                    if (hour<10)   strHour = "0"+hour;
+                    ((TextView) view).setText(strHour+":"+strMinute);
                     return true;
                 case R.id.textWhen:
                     alarmDays = (boolean[]) data;
@@ -156,42 +187,47 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
                     }
                    return true;
                 case R.id.textDescription:
-                    String description = data.toString();
+                    description = data.toString();
                     ((TextView) view).setText(description);
                     return true;
                 case R.id.cbEnable:
+                    ((CheckBox) view).setOnCheckedChangeListener(this);
                     boolean checked = false;
                     alarmDays = (boolean[]) data;
                     for (int i=0; i<alarmDays.length; i++){
                         if (alarmDays[i] == true) checked=true;
                     }
-                    ((CheckBox)view).setChecked(checked);
+                    ((CheckBox) view).setChecked(checked);
                     return true;
             }
             return false;
         }
-    }
-    //Example use Intent,PendingIntent,BroadcastRecevier;
-    /*            case R.id.btn_start:
-                int hour=0;
-                int minute=0;
 
-                alarmIntent.putExtra("intentState",1);
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
+            if(isChecked){
+                Log.d("AlarmDebud","CB Active!");
+
+                alarmIntent = new Intent(getContext(), AlarmReceiver.class);
+                alarmIntent.putExtra("description",description);
                 alarmPendingIntent = PendingIntent.getBroadcast(getContext(),0,alarmIntent,PendingIntent.FLAG_CANCEL_CURRENT);
 
-                long delay = 0;
-                String strMinute=String.valueOf(minute);
+                LocalTime localTime = new LocalTime();
+                if (hour <= 12) hour+=12;
 
-                if(minute<10) strMinute = "0"+minute;
-
-                setTimeText("Start in: "+hour+":"+strMinute);
-
-                delay = (hour-localTime.getHourOfDay())*3600000+
+                Log.d("AlarmDebud",hour +"-->"+ localTime.getHourOfDay());
+                Log.d("AlarmDebud",minute +"-->"+ localTime.getMinuteOfHour());
+                long delay = (hour-localTime.getHourOfDay())*3600000+
                         (minute-localTime.getMinuteOfHour())*60000-
                         (localTime.getSecondOfMinute()*1000)-
                         (localTime.getMillisOfSecond());
 
-                if(delay > 0) alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()+delay, alarmPendingIntent);
+                Log.d("AlarmDebud","Delay"+String.valueOf(delay));
 
-                break;  */
+                if(delay > 0) alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()+delay, alarmPendingIntent);
+                //if(true) alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()+delay, alarmPendingIntent);
+            }else if (alarmPendingIntent != null) alarmMgr.cancel(alarmPendingIntent);
+        }
+    }
+
 }

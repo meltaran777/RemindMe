@@ -7,18 +7,15 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
 import org.bogdan.remindme.R;
+import org.bogdan.remindme.content.AlarmClock;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class AddAlarmActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -27,6 +24,18 @@ public class AddAlarmActivity extends AppCompatActivity implements View.OnClickL
     private Button btnCancel;
     private Button btnOK;
     private TimePicker timePicker;
+
+    // Boolean array for selected items
+    boolean[] checkedDay = new boolean[]{
+            false, //M
+            false, //T
+            false, //W
+            false, // Th
+            false, //F
+            false, //S
+            false //San
+    };
+    int alarmId=-1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,23 +47,28 @@ public class AddAlarmActivity extends AppCompatActivity implements View.OnClickL
         btnOK = (Button) findViewById(R.id.btn_ok);
         timePicker = (TimePicker) findViewById(R.id.timePickerAddAlarm);
 
+        timePicker.setIs24HourView(true);
+
         btnRepeat.setOnClickListener(this);
         btnCancel.setOnClickListener(this);
         btnOK.setOnClickListener(this);
+
+        Intent intent = getIntent();
+        if (intent != null) {
+            alarmId = intent.getIntExtra("alarmID", -1);
+            if (alarmId >= 0) {
+                editText.setText(AlarmClock.getAlarmList().get(alarmId).getDescription());
+                timePicker.setCurrentHour(AlarmClock.getAlarmList().get(alarmId).getHour());
+                timePicker.setCurrentMinute(AlarmClock.getAlarmList().get(alarmId).getMinute());
+                checkedDay = AlarmClock.getAlarmList().get(alarmId).getAlarmDays();
+                btnRepeatSetText();
+            }
+        }
     }
 
 
 
-    // Boolean array for selected items
-    final boolean[] checkedDay = new boolean[]{
-            false, //M
-            false, //T
-            false, //W
-            false, // Th
-            false, //F
-            false, //S
-            false //San
-    };
+
     @Override
     public void onClick(View v) {
 
@@ -69,12 +83,13 @@ public class AddAlarmActivity extends AppCompatActivity implements View.OnClickL
                 intent.putExtra("hour",hour);
                 intent.putExtra("minute",minute);
                 intent.putExtra("descText",descText);
+                intent.putExtra("alarmId",alarmId);
                 setResult(Activity.RESULT_OK,intent);
 
                 finish();
                 break;
             case R.id.btn_cancel:
-
+                finish();
                 break;
             case R.id.btn_repeat:
 
@@ -82,7 +97,6 @@ public class AddAlarmActivity extends AppCompatActivity implements View.OnClickL
                 builder.setIcon(R.drawable.ic_inf);
                 builder.setTitle("Select Day of Week");
                 builder.setCancelable(false);
-
                  String[] day = new String[]{
                         "Monday",
                         "Tuesday",
@@ -92,8 +106,7 @@ public class AddAlarmActivity extends AppCompatActivity implements View.OnClickL
                         "Saturday",
                         "Sunday"
                 };
-
-                // Convert the color array to list
+                // Convert the day array to list
                 final List<String> daysList = Arrays.asList(day);
 
                 builder.setMultiChoiceItems(day, checkedDay, new DialogInterface.OnMultiChoiceClickListener() {
@@ -107,33 +120,7 @@ public class AddAlarmActivity extends AppCompatActivity implements View.OnClickL
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        btnRepeat.setHint("");
-                        for(int i=0;i<checkedDay.length;i++){
-                            boolean day=checkedDay[i];
-                            if(day == true) switch (i){
-                                case 0:
-                                    btnRepeat.setHint(btnRepeat.getHint()+"Mn ");
-                                    break;
-                                case 1:
-                                    btnRepeat.setHint(btnRepeat.getHint()+"Ts ");
-                                    break;
-                                case 2:
-                                    btnRepeat.setHint(btnRepeat.getHint()+"Wd ");
-                                    break;
-                                case 3:
-                                    btnRepeat.setHint(btnRepeat.getHint()+"Th ");
-                                    break;
-                                case 4:
-                                    btnRepeat.setHint(btnRepeat.getHint()+"Fr ");
-                                    break;
-                                case 5:
-                                    btnRepeat.setHint(btnRepeat.getHint()+"St ");
-                                    break;
-                                case 6:
-                                    btnRepeat.setHint(btnRepeat.getHint()+"Sn");
-                                    break;
-                            }
-                        }
+                        btnRepeatSetText();
                         dialog.dismiss();
                     }
                 });
@@ -143,5 +130,35 @@ public class AddAlarmActivity extends AppCompatActivity implements View.OnClickL
                 break;
         }
 
+    }
+
+    private void btnRepeatSetText(){
+        btnRepeat.setText("");
+        for(int i=0;i<checkedDay.length;i++){
+            boolean day=checkedDay[i];
+            if(day == true) switch (i){
+                case 0:
+                    btnRepeat.setText(btnRepeat.getText()+"Mn ");
+                    break;
+                case 1:
+                    btnRepeat.setText(btnRepeat.getText()+"Ts ");
+                    break;
+                case 2:
+                    btnRepeat.setText(btnRepeat.getText()+"Wd ");
+                    break;
+                case 3:
+                    btnRepeat.setText(btnRepeat.getText()+"Th ");
+                    break;
+                case 4:
+                    btnRepeat.setText(btnRepeat.getText()+"Fr ");
+                    break;
+                case 5:
+                    btnRepeat.setText(btnRepeat.getText()+"St ");
+                    break;
+                case 6:
+                    btnRepeat.setText(btnRepeat.getText()+"Sn");
+                    break;
+            }
+        }
     }
 }

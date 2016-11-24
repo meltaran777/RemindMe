@@ -17,7 +17,8 @@
         android:id="@+id/timePickerAddAlarm"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="18dp" />
+        android:layout_marginTop="18dp"
+        android:timePickerMode="spinner"/>
 
     <EditText
         android:text="Description"
@@ -27,7 +28,7 @@
         android:id="@+id/textViewDescription" />
 
     <Button
-        android:hint="Repeat"
+        android:hint="When Repeat?"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/btn_repeat" />
