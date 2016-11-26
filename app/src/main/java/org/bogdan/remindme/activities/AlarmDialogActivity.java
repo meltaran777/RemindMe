@@ -35,7 +35,7 @@ public class AlarmDialogActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.TYPE_SYSTEM_DIALOG);
         getWindow().addFlags(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
 
-        Log.d("AlarmDebud","Alarm Dialog");
+        Log.d("Debug Alarm","Start alarmDialogActivity");
 
         displayAlert();
     }

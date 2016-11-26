@@ -27,11 +27,25 @@
         android:layout_height="wrap_content"
         android:id="@+id/textViewDescription" />
 
+
+    <android.support.v7.widget.SwitchCompat
+        android:text="On/Off"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:id="@+id/switch_on_off" />
+
     <Button
-        android:hint="When Repeat?"
+        android:hint="Repeat"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/btn_repeat" />
+
+    <Button
+        android:hint="Sound"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn_sound" />
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -33,7 +33,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             if(intent.getExtras().getInt("intentState") == 1)context.startService(serviceIntent);
         else if(intent.getExtras().getInt("intentState") == 0) context.stopService(serviceIntent); */
 
-        Log.d("AlarmDebud","AlarmRecivier");
+        Log.d("Debug Alarm","Start onReceive");
 
         WakeLocker w = new WakeLocker();
         w.acquire(context);

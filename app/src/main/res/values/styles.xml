@@ -14,6 +14,12 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorControlNormal">@color/colorWhite</item>
 
+        <item name="android:buttonStyle">@style/App_BtnStyle</item>
+
+    </style>
+
+    <style name="App_BtnStyle" parent="@style/Widget.AppCompat.Button">
+        <item name="android:height">100dip</item>
     </style>
 
 

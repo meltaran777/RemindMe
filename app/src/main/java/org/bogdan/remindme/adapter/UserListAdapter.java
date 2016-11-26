@@ -58,13 +58,6 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
 
         }
     }
-
-
-
-
-
-
-
     @Override
     public int getItemCount() {
         return data == null ? 0 : data.size();
