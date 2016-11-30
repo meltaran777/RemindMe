@@ -1,11 +1,13 @@
 package org.bogdan.remindme.util;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.database.Cursor;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -18,6 +20,15 @@ import android.widget.Toast;
 
 import org.bogdan.remindme.activities.AlarmDialogActivity;
 import org.bogdan.remindme.activities.MainActivity;
+import org.bogdan.remindme.content.AlarmClock;
+import org.bogdan.remindme.content.UserVK;
+import org.bogdan.remindme.database.DBHelper;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by Bodia on 18.11.2016.
@@ -28,12 +39,62 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         /*
-        Intent serviceIntent = new Intent(context,RingtoneServices.class);
+        //Start read data from db
+        DBHelper.getDbHelper(context);
+        Cursor cursor = DBHelper.getDatabase(context).query(DBHelper.TABLE_ALARMS ,null ,null ,null ,null ,null ,null);
 
-            if(intent.getExtras().getInt("intentState") == 1)context.startService(serviceIntent);
-        else if(intent.getExtras().getInt("intentState") == 0) context.stopService(serviceIntent); */
+        if(cursor.moveToFirst()){
+            int activeInd = cursor.getColumnIndex(DBHelper.KEY_ACTIVE_ALARM);
+            int daysArrayInd[] = {
+                    cursor.getColumnIndex(DBHelper.KEY_MONDAY_ALARM),
+                    cursor.getColumnIndex(DBHelper.KEY_TUESDAY_ALARM),
+                    cursor.getColumnIndex(DBHelper.KEY_WEDNESDAY_ALARM),
+                    cursor.getColumnIndex(DBHelper.KEY_THURSDAY_ALARM),
+                    cursor.getColumnIndex(DBHelper.KEY_FRIDAY_ALARM),
+                    cursor.getColumnIndex(DBHelper.KEY_SATURDAY_ALARM),
+                    cursor.getColumnIndex(DBHelper.KEY_SUNDAY_ALARM)
+            };
+            int deskInd = cursor.getColumnIndex(DBHelper.KEY_DESC_ALARM);
+            int textTimeInd = cursor.getColumnIndex(DBHelper.KEY_TIME_TEXT_ALARM);
+            int idInd = cursor.getColumnIndex(DBHelper.KEY_ID_ALARM);
+            int hourInd = cursor.getColumnIndex(DBHelper.KEY_HOUR_ALARM);
+            int minuteInd = cursor.getColumnIndex(DBHelper.KEY_MINUTE_ALARM);
 
-        Log.d("Debug Alarm","Start onReceive");
+            do{
+                int id = cursor.getInt(idInd);
+                Log.d("DebugDB","DB record id = "+id);
+
+                boolean active;
+                if (cursor.getInt(activeInd) == 0) {active=false;}else active=true;
+
+                boolean alarmDays[] = new boolean[7];
+                for(int i=0; i < alarmDays.length; i++)
+                    if (cursor.getInt(daysArrayInd[i]) == 0) {alarmDays[i]=false;}else alarmDays[i]=true;
+
+                String desc = cursor.getString(deskInd);
+
+                int hour = cursor.getInt(hourInd);
+                int minute = cursor.getInt(minuteInd);
+
+                AlarmClock alarmClock = new AlarmClock(alarmDays,hour,minute,desc,active);
+                alarmList.add(alarmClock);
+            }while (cursor.moveToNext());
+        }else Log.d("DebugDB","0 rows");
+
+        cursor.close();
+        DBHelper.closeDB();
+
+        //for (AlarmClock alarmClock : alarmList) Log.d("DebugDB",alarmClock.toString());
+
+        //End read data from db
+        */
+        List<AlarmClock> alarmList = new ArrayList<>();
+        DBHelper.readTableAlarms(context, alarmList);
+        DBHelper.closeDB();
+
+        AlarmManager alarmMgr = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        //AlarmClock.createAlarm(context, alarmMgr, alarmList);  //Create next alarm
+
 
         WakeLocker w = new WakeLocker();
         w.acquire(context);
@@ -63,6 +124,4 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             if (wakeLock != null) wakeLock.release(); wakeLock = null;
         }
     }
-
-
 }

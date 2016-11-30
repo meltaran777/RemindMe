@@ -5,6 +5,7 @@ import android.content.Intent;
 import org.bogdan.remindme.activities.MainActivity;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKAccessTokenTracker;
+import com.vk.sdk.VKScope;
 import com.vk.sdk.VKSdk;
 
 /**
@@ -19,7 +20,6 @@ public class Application extends android.app.Application {
         vkAccessTokenTracker.startTracking();
         VKSdk.initialize(this);
     }
-
 
     VKAccessTokenTracker vkAccessTokenTracker = new VKAccessTokenTracker() {
         @Override

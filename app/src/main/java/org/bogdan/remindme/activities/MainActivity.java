@@ -128,7 +128,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }while (cursor.moveToNext());
         }else Log.d("DB","0 rows");
         cursor.close();
-
         if(UserVK.getUsersList().isEmpty()) {
             return false;
         }else return true;
