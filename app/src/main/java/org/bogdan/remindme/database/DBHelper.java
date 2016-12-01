@@ -1,5 +1,6 @@
 package org.bogdan.remindme.database;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseErrorHandler;
@@ -141,13 +142,55 @@ public class DBHelper extends SQLiteOpenHelper {
                 int hour = cursor.getInt(hourInd);
                 int minute = cursor.getInt(minuteInd);
 
-                AlarmClock alarmClock = new AlarmClock(alarmDays,hour,minute,desc,active);
+                AlarmClock alarmClock = new AlarmClock(alarmDays, hour, minute, desc, active, alarmList);
                 alarmList.add(alarmClock);
             }while (cursor.moveToNext());
         }else Log.d("DebugDB","0 rows");
         cursor.close();
         return alarmList;
 
+    }
+
+    public static void putAlarmValue(Context context, ContentValues contentValues, String descString, boolean active, boolean [] daysArray, int hour, int minute) {
+
+        contentValues.put(DBHelper.getDbHelper(context).KEY_DESC_ALARM, descString);
+
+        contentValues.put(DBHelper.getDbHelper(context).KEY_TIME_TEXT_ALARM, hour+":"+minute);
+
+        contentValues.put(DBHelper.getDbHelper(context).KEY_HOUR_ALARM, hour);
+        contentValues.put(DBHelper.getDbHelper(context).KEY_MINUTE_ALARM, minute);
+
+        if (active) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_ACTIVE_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_ACTIVE_ALARM, 0);
+
+        if (daysArray[0]) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_MONDAY_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_MONDAY_ALARM, 0);
+
+        if (daysArray[1]) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_TUESDAY_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_TUESDAY_ALARM, 0);
+
+        if (daysArray[2]) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_WEDNESDAY_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_WEDNESDAY_ALARM, 0);
+
+        if (daysArray[3]) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_THURSDAY_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_THURSDAY_ALARM, 0);
+
+        if (daysArray[4]) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_FRIDAY_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_FRIDAY_ALARM, 0);
+
+        if (daysArray[5]) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_SATURDAY_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_SATURDAY_ALARM, 0);
+
+        if (daysArray[6]) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_SUNDAY_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_SUNDAY_ALARM, 0);
     }
 
 }

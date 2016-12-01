@@ -2,11 +2,16 @@ package org.bogdan.remindme.content;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.os.PowerManager;
 import android.os.SystemClock;
 import android.util.Log;
 
+import org.bogdan.remindme.activities.AlarmDialogActivity;
+import org.bogdan.remindme.activities.MainActivity;
+import org.bogdan.remindme.database.DBHelper;
 import org.bogdan.remindme.util.AlarmReceiver;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDateTime;
@@ -47,19 +52,17 @@ public class AlarmClock implements Comparable<AlarmClock> {
     private int hour;
     private int minute;
     private int alarmId;
-
     private String description;
     private Intent alarmIntent;
-
     private PendingIntent alarmPendingIntent;
 
-    public AlarmClock(boolean checkedDays[], int hour , int minute, String description, boolean active){
+    public AlarmClock(boolean checkedDays[], int hour , int minute, String description, boolean active, List<AlarmClock> alarmList){
         this.alarmDays = checkedDays;
         this.hour = hour;
         this.minute = minute;
         this.description = description;
         this.active = active;
-        alarmId = getAlarmList().size();
+        alarmId = alarmList.size();
     }
 
     public static ArrayList<Map<String, Object>> getAlarmArrayMap(){
@@ -84,14 +87,6 @@ public class AlarmClock implements Comparable<AlarmClock> {
 
     public static List<AlarmClock> getAlarmListFull(List<AlarmClock> alarmList){
         alarmListFull.clear();
-        /*
-        for(AlarmClock alarmClock : alarmList) {
-            Log.d(DEBUG_TAG, "getAlarmListFull:StartDaysArray");
-            for (boolean day : alarmClock.getAlarmDays()) {
-                Log.d(DEBUG_TAG, "Day =  " + day);
-            }
-        }
-        */
         for (AlarmClock alarmClock : alarmList) {
             boolean alarmDays[] = alarmClock.getAlarmDays();
             int i=0;
@@ -102,35 +97,18 @@ public class AlarmClock implements Comparable<AlarmClock> {
                 if (day) {
                     single = false;
                     alarmDaysForFullList[i] = true;
-                    /*
-                    Log.d(DEBUG_TAG, "getAlarmListFull:alarmDaysForFullList Before Add");
-                    for (boolean day1 : alarmDaysForFullList) {
-                        Log.d(DEBUG_TAG, "Day =  " + day1);
-                    }
-                    */
-                    AlarmClock alarmClockFullList = new AlarmClock(alarmDaysForFullList, alarmClock.getHour(), alarmClock.getMinute(), alarmClock.getDescription(), alarmClock.isActive());
+                    AlarmClock alarmClockFullList = new AlarmClock(alarmDaysForFullList, alarmClock.getHour(), alarmClock.getMinute(), alarmClock.getDescription(), alarmClock.isActive(), alarmList);
+                    alarmClockFullList.setAlarmId(alarmClock.getAlarmId());
                     alarmListFull.add(alarmClockFullList);
-                    //for (int j=0; j<alarmDaysForFullList.length; j++) alarmDaysForFullList[j] = false;
-
-                    /*
-                    Log.d(DEBUG_TAG, "getAlarmListFull:AfterAddToFullList "+alarmListFull.indexOf(alarmClockFullList));
-                    for (boolean day1 : alarmClockFullList.getAlarmDays()) {
-                        Log.d(DEBUG_TAG, "Day =  " + day1);
-                    }
-                    */
                 }
                 i++;
             }
-            if(single) alarmListFull.add(new AlarmClock(alarmClock.getAlarmDays(), alarmClock.getHour(), alarmClock.getMinute(), alarmClock.getDescription(), alarmClock.isActive()));
-        }
-        /*
-        for(AlarmClock alarmClock : alarmListFull) {
-            Log.d(DEBUG_TAG, "getAlarmListFull:EndDaysArray "+alarmClock.getDescription());
-            for (boolean day : alarmClock.getAlarmDays()) {
-                Log.d(DEBUG_TAG, "Day =  " + day);
+            if(single) {
+                AlarmClock alarmClockFullList = new AlarmClock(alarmClock.getAlarmDays(), alarmClock.getHour(), alarmClock.getMinute(), alarmClock.getDescription(), alarmClock.isActive(), alarmList);
+                alarmClockFullList.setAlarmId(alarmClock.getAlarmId());
+                alarmListFull.add(alarmClockFullList);
             }
         }
-        */
         return alarmListFull;
     }
 
@@ -151,20 +129,19 @@ public class AlarmClock implements Comparable<AlarmClock> {
         if(minute<10) strMinute = "0"+minute;
 
         String strAlarm = description+" "+strHour+":"+strMinute+" Active"+active;
-        for (boolean day : alarmDays) strAlarm += "\n"+day;
+        //for (boolean day : alarmDays) strAlarm += "\n"+day;
         return strAlarm;
     }
 
     public static long getAlarmTimeInMillis(AlarmClock alarmClock) {
-        Calendar alarmCalendar = GregorianCalendar.getInstance();
-        //alarmCalendar.setTimeZone(TimeZone.getTimeZone("Europe/Kiev"));
+        Calendar alarmCalendar = Calendar.getInstance();
         boolean[] alarmDays = alarmClock.getAlarmDays();
         int dayOfWeek;
         int hour = alarmClock.getHour();
         int minute = alarmClock.getMinute();
         boolean single = true;
         LocalDateTime now;
-        LocalDateTime alarmTime;
+        LocalDateTime alarmTime = new LocalDateTime();
 
         for (int i=0; i<alarmDays.length; i++) {
             if (alarmDays[i]) {
@@ -178,15 +155,11 @@ public class AlarmClock implements Comparable<AlarmClock> {
                     int month = alarmTime.getMonthOfYear();
                     int year = alarmTime.getYear();
                     alarmCalendar.set(year, month-1, dayOfMonth);
-                    //Log.d(DEBUG_DELAY, "getAlarmTimeInMillis:AlarmCalendarTimeBeforeNow "+alarmCalendar.toString());
-                    //Log.d(DEBUG_DELAY, "getAlarmTimeInMillis:AlarmJodaTimeBeforeNow "+alarmTime.toString());
                 }else {
                     int dayOfMonth = alarmTime.getDayOfMonth();
                     int month = alarmTime.getMonthOfYear();
                     int year = alarmTime.getYear();
                     alarmCalendar.set(year, month-1, dayOfMonth);
-                    //Log.d(DEBUG_DELAY, "getAlarmTimeInMillis:AlarmCalendarTimeAfterNow "+alarmCalendar.toString());
-                    //Log.d(DEBUG_DELAY, "getAlarmTimeInMillis:AlarmJodaTimeAfterNow "+alarmTime.toString());
                 }
             }
         }
@@ -199,24 +172,11 @@ public class AlarmClock implements Comparable<AlarmClock> {
                 int month = alarmTime.getMonthOfYear();
                 int year = alarmTime.getYear();
                 alarmCalendar.set(year, month-1, dayOfMonth);
-                /*
-                dayOfWeek = alarmTime.getDayOfWeek();
-                switch (dayOfWeek){
-                    case 1: alarmCalendar.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-                    case 2: alarmCalendar.set(Calendar.DAY_OF_WEEK, Calendar.TUESDAY);
-                    case 3: alarmCalendar.set(Calendar.DAY_OF_WEEK, Calendar.WEDNESDAY);
-                    case 4: alarmCalendar.set(Calendar.DAY_OF_WEEK, Calendar.THURSDAY);
-                    case 5: alarmCalendar.set(Calendar.DAY_OF_WEEK, Calendar.FEBRUARY);
-                    case 6: alarmCalendar.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
-                    case 7: alarmCalendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
-                }
-                */
             }else {
                 int dayOfMonth = alarmTime.getDayOfMonth();
                 int month = alarmTime.getMonthOfYear();
                 int year = alarmTime.getYear();
                 alarmCalendar.set(year, month-1, dayOfMonth);
-                //Log.d(DEBUG_DELAY, "getAlarmTimeInMillis:AlarmCalendarTimeAfterNow:Single "+alarmCalendar.toString());
             }
         }
 
@@ -228,38 +188,73 @@ public class AlarmClock implements Comparable<AlarmClock> {
         Long alarmTimeMillis = alarmCalendar.getTimeInMillis();
         Long nowMillis = GregorianCalendar.getInstance().getTimeInMillis();
         Long diff = alarmTimeMillis - nowMillis;
-        Log.d(DEBUG_DELAY, "InMillis:Calendar "+alarmCalendar.toString());
-        Log.d(DEBUG_DELAY, "InMillis:Diff "+diff);
-
+        if (diff < 0) {
+            Log.d(DEBUG_DELAY, "InMillis:AlarmTimeJoda "+alarmTime.toString());
+            Log.d(DEBUG_DELAY, "InMillis:Calendar " + alarmCalendar.toString());
+            Log.d(DEBUG_DELAY, "InMillis:Diff: " +"Hour = "+diff/(1000*36000) +" Second = " +diff/1000);
+        }
         return alarmTimeMillis;
     }
 
-    public static void createAlarm(Context context ,AlarmManager am, List<AlarmClock> alarmList){
+    public static void createAlarm(Context context ,AlarmManager am, List<AlarmClock> alarmList, boolean receiverMod){
+        List<AlarmClock> alarmListActive = new ArrayList<>();
         List<AlarmClock> alarmListFull = getAlarmListFull(alarmList);
         Collections.sort(alarmListFull);
-
-        Log.d(DEBUG_TAG, "createAlarm:alarmFullList");
+        //Log.d(DEBUG_TAG, "createAlarm:alarmFullList");
         for (AlarmClock alarmClock : alarmListFull) {
-            Log.d(DEBUG_TAG, "Active = " + alarmClock.isActive() + " Index = " + alarmListFull.indexOf(alarmClock) + " Desc " + alarmClock.getDescription());
+            //Log.d(DEBUG_TAG, "Active = " + alarmClock.isActive() + " ID = " + alarmClock.getAlarmId() + " Desc " + alarmClock.getDescription());
             //for (boolean day : alarmClock.getAlarmDays()) Log.d(DEBUG_TAG, "Day = " + day);
-            Long diff = getAlarmTimeInMillis(alarmClock) - GregorianCalendar.getInstance().getTimeInMillis();
-            Log.d(DEBUG_TAG, "createAlarm:DelayIs:"+" Hour = "+diff/(1000*60*60)+" Second = "+diff/1000);
+            //Long diff = getAlarmTimeInMillis(alarmClock) - GregorianCalendar.getInstance().getTimeInMillis();
+            //Log.d(DEBUG_TAG, "createAlarm:DelayIs:"+" Hour = "+diff/(1000*60*60)+" Second = "+diff/1000);
+            if (alarmClock.isActive() && alarmClock.isSingle()) alarmListActive.add(alarmClock);
         }
-
+        Collections.sort(alarmListActive);
+        for (AlarmClock clock : alarmListActive) Log.d(DEBUG_TAG, "createAlarm:listActive: "+clock.toString());
         for (AlarmClock alarmClock : alarmListFull) {
             if (alarmClock.isActive()) {
-                Log.d(DEBUG_TAG, "createAlarm");
+                //When call from receiver
+                if (receiverMod){
+                    AlarmClock alarmClockActive = alarmListActive.get(alarmListActive.size()-1);
+                    if (alarmClock.isSingle()){
+                        int alarmIdDB = alarmClockActive.getAlarmId()+1;
+                        String strAlarmIdDb = String.valueOf(alarmIdDB);
+                        ContentValues contentValues = new ContentValues();
+                        DBHelper.putAlarmValue(context, contentValues, alarmClockActive.getDescription(), false, alarmClockActive.getAlarmDays(), alarmClockActive.getHour(), alarmClockActive.getMinute());
+
+                        Log.d(DEBUG_TAG, "Active = "+alarmClockActive.isActive() + " ID = "+alarmClockActive.getAlarmId()+" Desc "+alarmClockActive.getDescription());
+                        Log.d(DEBUG_TAG, "AlarmId DB = "+strAlarmIdDb);
+                        DBHelper.getDatabase(context).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM + "=?", new String[] {strAlarmIdDb} );
+                    }
+                    WakeLocker w = new WakeLocker();
+                    w.acquire(context);
+
+                    Intent alarmDialogIntent = new Intent(context, AlarmDialogActivity.class);
+                    alarmDialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    alarmDialogIntent.putExtra("description", alarmClockActive.getDescription());
+                    context.startActivity(alarmDialogIntent);
+
+                    w.release();
+                }
+
+                //Log.d(DEBUG_TAG, "createAlarm");
                 //for (boolean day : alarmClock.getAlarmDays()) Log.d(DEBUG_TAG, "Day = "+day);
-                Log.d(DEBUG_TAG, "Active = "+alarmClock.isActive() + " Index = "+alarmListFull.indexOf(alarmClock)+" Desc "+alarmClock.getDescription());
+                //Log.d(DEBUG_TAG, "Active = "+alarmClock.isActive() + " Index = "+alarmListFull.indexOf(alarmClock)+" Desc "+alarmClock.getDescription());
 
                 Intent alarmIntent = new Intent(context, AlarmReceiver.class);
                 alarmIntent.putExtra("description",alarmClock.getDescription());
                 PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
                 am.set(AlarmManager.RTC_WAKEUP, getAlarmTimeInMillis(alarmClock), alarmPendingIntent);
+
                 return;
             }
         }
+    }
+
+    public boolean isSingle(){
+        boolean single = true;
+        for (boolean day : getAlarmDays()) if (day) single = false;
+        return single;
     }
 
     public static List<AlarmClock> getAlarmList() {
@@ -302,12 +297,12 @@ public class AlarmClock implements Comparable<AlarmClock> {
         this.alarmPendingIntent = alarmPendingIntent;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
-    }
-
     public int getAlarmId() {
         return alarmId;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public Intent getAlarmIntent() {
@@ -382,5 +377,22 @@ public class AlarmClock implements Comparable<AlarmClock> {
         //Log.d(DEBUG_TAG, "Minute = "+minute);
         //Log.d(DEBUG_TAG, "Delay = "+delay);
         return delay;
+    }
+    private static class WakeLocker {
+        private PowerManager.WakeLock wakeLock;
+
+        public void acquire(Context ctx) {
+            if (wakeLock != null) wakeLock.release();
+
+            PowerManager pm = (PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
+            wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+                    PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                    PowerManager.ON_AFTER_RELEASE, MainActivity.APP_TAG);
+            wakeLock.acquire();
+        }
+
+        public void release() {
+            if (wakeLock != null) wakeLock.release(); wakeLock = null;
+        }
     }
 }
