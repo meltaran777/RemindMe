@@ -46,6 +46,36 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
         DBHelper.readTableAlarms(context, alarmList);
         DBHelper.closeDB();
 
-        AlarmClock.createAlarm(context, alarmMgr, alarmList, true);
+        if (AlarmClock.createAlarm(context, alarmMgr, alarmList, true)) startAlarmDialog(context, intent);
+    }
+
+    private void startAlarmDialog(Context context, Intent intent){
+        WakeLocker w = new WakeLocker();
+        w.acquire(context);
+
+        Intent alarmDialogIntent = new Intent(context, AlarmDialogActivity.class);
+        alarmDialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        alarmDialogIntent.putExtra("description", intent.getStringExtra("description"));
+        context.startActivity(alarmDialogIntent);
+
+        w.release();
+    }
+
+    private class WakeLocker {
+        private PowerManager.WakeLock wakeLock;
+
+        public void acquire(Context ctx) {
+            if (wakeLock != null) wakeLock.release();
+
+            PowerManager pm = (PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
+            wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
+                    PowerManager.ACQUIRE_CAUSES_WAKEUP |
+                    PowerManager.ON_AFTER_RELEASE, MainActivity.APP_TAG);
+            wakeLock.acquire();
+        }
+
+        public void release() {
+            if (wakeLock != null) wakeLock.release(); wakeLock = null;
+        }
     }
 }

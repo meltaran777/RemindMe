@@ -196,26 +196,23 @@ public class AlarmClock implements Comparable<AlarmClock> {
         return alarmTimeMillis;
     }
 
-    public static void createAlarm(Context context ,AlarmManager am, List<AlarmClock> alarmList, boolean receiverMod){
+    public static boolean createAlarm(Context context ,AlarmManager am, List<AlarmClock> alarmList, boolean receiverMod){
         List<AlarmClock> alarmListActive = new ArrayList<>();
         List<AlarmClock> alarmListFull = getAlarmListFull(alarmList);
         Collections.sort(alarmListFull);
-        //Log.d(DEBUG_TAG, "createAlarm:alarmFullList");
         for (AlarmClock alarmClock : alarmListFull) {
-            //Log.d(DEBUG_TAG, "Active = " + alarmClock.isActive() + " ID = " + alarmClock.getAlarmId() + " Desc " + alarmClock.getDescription());
-            //for (boolean day : alarmClock.getAlarmDays()) Log.d(DEBUG_TAG, "Day = " + day);
-            //Long diff = getAlarmTimeInMillis(alarmClock) - GregorianCalendar.getInstance().getTimeInMillis();
             //Log.d(DEBUG_TAG, "createAlarm:DelayIs:"+" Hour = "+diff/(1000*60*60)+" Second = "+diff/1000);
             if (alarmClock.isActive() && alarmClock.isSingle()) alarmListActive.add(alarmClock);
         }
         Collections.sort(alarmListActive);
-        for (AlarmClock clock : alarmListActive) Log.d(DEBUG_TAG, "createAlarm:listActive: "+clock.toString());
         for (AlarmClock alarmClock : alarmListFull) {
             if (alarmClock.isActive()) {
-                //When call from receiver
+                //When call from receiver off single alarm
                 if (receiverMod){
-                    AlarmClock alarmClockActive = alarmListActive.get(alarmListActive.size()-1);
                     if (alarmClock.isSingle()){
+
+                        AlarmClock alarmClockActive = alarmListActive.get(alarmListActive.size()-1);
+
                         int alarmIdDB = alarmClockActive.getAlarmId()+1;
                         String strAlarmIdDb = String.valueOf(alarmIdDB);
                         ContentValues contentValues = new ContentValues();
@@ -225,30 +222,17 @@ public class AlarmClock implements Comparable<AlarmClock> {
                         Log.d(DEBUG_TAG, "AlarmId DB = "+strAlarmIdDb);
                         DBHelper.getDatabase(context).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM + "=?", new String[] {strAlarmIdDb} );
                     }
-                    WakeLocker w = new WakeLocker();
-                    w.acquire(context);
-
-                    Intent alarmDialogIntent = new Intent(context, AlarmDialogActivity.class);
-                    alarmDialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    alarmDialogIntent.putExtra("description", alarmClockActive.getDescription());
-                    context.startActivity(alarmDialogIntent);
-
-                    w.release();
                 }
-
-                //Log.d(DEBUG_TAG, "createAlarm");
-                //for (boolean day : alarmClock.getAlarmDays()) Log.d(DEBUG_TAG, "Day = "+day);
-                //Log.d(DEBUG_TAG, "Active = "+alarmClock.isActive() + " Index = "+alarmListFull.indexOf(alarmClock)+" Desc "+alarmClock.getDescription());
-
                 Intent alarmIntent = new Intent(context, AlarmReceiver.class);
                 alarmIntent.putExtra("description",alarmClock.getDescription());
                 PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
                 am.set(AlarmManager.RTC_WAKEUP, getAlarmTimeInMillis(alarmClock), alarmPendingIntent);
 
-                return;
+                return true;
             }
         }
+        return false;
     }
 
     public boolean isSingle(){
@@ -377,22 +361,5 @@ public class AlarmClock implements Comparable<AlarmClock> {
         //Log.d(DEBUG_TAG, "Minute = "+minute);
         //Log.d(DEBUG_TAG, "Delay = "+delay);
         return delay;
-    }
-    private static class WakeLocker {
-        private PowerManager.WakeLock wakeLock;
-
-        public void acquire(Context ctx) {
-            if (wakeLock != null) wakeLock.release();
-
-            PowerManager pm = (PowerManager) ctx.getSystemService(Context.POWER_SERVICE);
-            wakeLock = pm.newWakeLock(PowerManager.FULL_WAKE_LOCK |
-                    PowerManager.ACQUIRE_CAUSES_WAKEUP |
-                    PowerManager.ON_AFTER_RELEASE, MainActivity.APP_TAG);
-            wakeLock.acquire();
-        }
-
-        public void release() {
-            if (wakeLock != null) wakeLock.release(); wakeLock = null;
-        }
     }
 }

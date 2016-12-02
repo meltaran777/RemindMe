@@ -17,17 +17,21 @@ import java.util.List;
 public class UserVK implements Comparable<UserVK> {
 
     private final String name;
-    private final DateTime birthDate;
+
+    private DateTime birthDate;
+
     private final String dateFormat;
     private final String avatarURL;
+    private boolean notify;
 
     static private ArrayList<UserVK> users=new ArrayList<>();
 
-    public UserVK(String name, DateTime birthDate, String dateFormat, String avatarURL) {
+    public UserVK(String name, DateTime birthDate, String dateFormat, String avatarURL, boolean notify) {
         this.name = name;
         this.birthDate = birthDate;
         this.dateFormat = dateFormat;
         this.avatarURL =avatarURL;
+        this.notify = notify;
     }
 
     public DateTime getBirthDate() {
@@ -48,15 +52,12 @@ public class UserVK implements Comparable<UserVK> {
         return users;
     }
 
-
     @Override
     public int compareTo(UserVK another) {
-
-        Integer dayThis=getDayToNextBirht(getBirthDate());
-        Integer dayAnother=getDayToNextBirht(another.getBirthDate());
+        Integer dayThis = getDayToNextBirht();
+        Integer dayAnother = another.getDayToNextBirht();
 
         return dayThis.compareTo(dayAnother);
-
     }
 
     public static String getTimeToNextBirht(UserVK userVK){
@@ -85,6 +86,7 @@ public class UserVK implements Comparable<UserVK> {
         }
     }
 
+
     public static LocalDate getNextBirthDate(DateTime birthDate) {
 
         LocalDate dateOfBirth =birthDate.toLocalDate();
@@ -104,10 +106,9 @@ public class UserVK implements Comparable<UserVK> {
         }
     }
 
+    public int getDayToNextBirht(){
 
-    public static int getDayToNextBirht(DateTime birthDate){
-
-        LocalDate dateOfBirth =birthDate.toLocalDate();
+        LocalDate dateOfBirth =getBirthDate().toLocalDate();
         LocalDate currentDate = new LocalDate();
         // Take birthDay  and birthMonth  from dateOfBirth
         int birthDay = dateOfBirth.getDayOfMonth();
@@ -128,5 +129,29 @@ public class UserVK implements Comparable<UserVK> {
         }
     }
 
+    public static List<UserVK> getUserVKListFull(List<UserVK> userVKList){
+        List<UserVK> userVKListFull = new ArrayList<>();
+        for (UserVK userVK : userVKList){
+            userVKListFull.add(userVK);
+            if (userVK.isNotify()) {
+                userVK.setBirthDate(userVK.getBirthDate().minusDays(3));
+                userVKListFull.add(userVK);
+            }
+        }
+        return userVKListFull;
+    }
+
+
+    public boolean isNotify() {
+        return notify;
+    }
+
+    public void setNotify(boolean notify) {
+        this.notify = notify;
+    }
+
+    public void setBirthDate(DateTime birthDate) {
+        this.birthDate = birthDate;
+    }
 
 }

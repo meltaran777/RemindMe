@@ -17,14 +17,21 @@ import android.support.v4.app.NotificationCompat;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 
+import net.danlew.android.joda.JodaTimeAndroid;
+
 import org.bogdan.remindme.activities.MainActivity;
 import org.bogdan.remindme.R;
 import org.bogdan.remindme.content.UserVK;
+import org.bogdan.remindme.database.DBHelper;
+import org.joda.time.LocalDateTime;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by Bodia on 12.11.2016.
@@ -37,17 +44,27 @@ public class NotificationPublisher extends BroadcastReceiver {
 
     @Override
      public void onReceive(final Context context, Intent intent) {
-
+        JodaTimeAndroid.init(context);
+        //Show notification
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         Notification notification = intent.getParcelableExtra(NOTIFICATION);
         int notificationId = intent.getIntExtra(NOTIFICATION_ID, 0);
         notificationManager.notify(notificationId, notification);
+
+        //Create next notification
+        List<UserVK> userVKList = new ArrayList<>();
+        DBHelper.readUserVKTable(context, userVKList);
+
+        List<UserVK> userVKListFull = UserVK.getUserVKListFull(userVKList);
+        Collections.sort(userVKListFull);
+
+        scheduleNotification(context, dayToMillis(userVKListFull.get(0).getDayToNextBirht()),0,userVKListFull.get(0).getAvatarURL());
     }
 
     private static NotificationCompat.Builder builder;
 
-    public static void scheduleNotification(Context context, long delay, int notificationId, String largeIconUrl) {//delay is after how much time(in millis) from current time you want to schedule the notification
+    public static void scheduleNotification(Context context, long delay, int notificationId, String largeIconUrl) {
 
         builder = new NotificationCompat.Builder(context)
                 .setContentTitle(context.getString(R.string.str_birthday))
@@ -73,9 +90,6 @@ public class NotificationPublisher extends BroadcastReceiver {
 
             }
         });
-
-        //new DownloadImageTask(builder,context).execute(largeIconUrl); //Load avatar icon as notif big icon
-
         Intent intent = new Intent(context, MainActivity.class);
         PendingIntent activity = PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         builder.setContentIntent(activity);
@@ -92,24 +106,14 @@ public class NotificationPublisher extends BroadcastReceiver {
         alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
     }
 
+    public static long dayToMillis(long day){
+        LocalDateTime now = new LocalDateTime();
+        int hours,minute,second;
+        hours = now.getHourOfDay();
+        minute = now.getMinuteOfHour();
+        second = now.getSecondOfMinute();
+        long millis = day*86400000-(3600000*hours+60000*minute+1000*second);
 
-    public static Bitmap getBitmapFromURL(String strURL) {
-        try {
-            URL url = new URL(strURL);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            Bitmap myBitmap = BitmapFactory.decodeStream(input);
-            return myBitmap;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return millis;
     }
-
-
-
-
-
 }

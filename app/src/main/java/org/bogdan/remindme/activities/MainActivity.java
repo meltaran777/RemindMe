@@ -1,12 +1,10 @@
 package org.bogdan.remindme.activities;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
@@ -16,7 +14,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ProgressBar;
 
@@ -52,7 +49,6 @@ import java.util.List;
  * Created by Bodia on 09.06.2016.
  */
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-
     private static final int TAB_ONE=0;
     private static final int TAB_TWO=1;
     private static final int TAB_THREE=2;
@@ -66,9 +62,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private NavigationView navigationView;
     private ProgressBar progressBar;
 
-    DBHelper dbHelper = null;
-    SQLiteDatabase database = null;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,25 +72,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
-        initDB();
         vkLogin();
         initToolbar();
         initNavigationView();
-        if(readDB()) {
+        if(DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList())) {
+            Collections.sort(UserVK.getUsersList());
             initTabs();
-            closeDB();
+            DBHelper.closeDB();
         }
     }
-
-
-
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
             @Override
             public void onResult(VKAccessToken res) {
-                initDB();
-                if(!readDB()) {
+                //initDB();
+                if(!DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList())) {
                     vkRequestExecute(getVKFriendsList);
                 }
             }
@@ -110,40 +100,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             super.onActivityResult(requestCode, resultCode, data);
     }
 
-
-    private boolean readDB() {
-        UserVK.getUsersList().clear();
-        Cursor cursor = database.query(DBHelper.TABLE_USERS ,null ,null ,null ,null ,null ,null);
-        if(cursor.moveToFirst()){
-            int idIndex = cursor.getColumnIndex(DBHelper.KEY_ID);
-            int nameIndex = cursor.getColumnIndex(DBHelper.KEY_NAME);
-            int avatarURLIndex = cursor.getColumnIndex(DBHelper.KEY_AVATAR_URL);
-            int bdateIndex = cursor.getColumnIndex(DBHelper.KEY_BDATE);
-            int dateFormatIndex = cursor.getColumnIndex(DBHelper.KEY_DATE_FORMAT);
-
-            do{
-                DateTime birthDate = DateTimeFormat.forPattern(cursor.getString(dateFormatIndex)).parseDateTime(cursor.getString(bdateIndex));
-                UserVK.getUsersList().add(new UserVK(cursor.getString(nameIndex), birthDate, cursor.getString(dateFormatIndex), cursor.getString(avatarURLIndex)));
-
-            }while (cursor.moveToNext());
-        }else Log.d("DB","0 rows");
-        cursor.close();
-        if(UserVK.getUsersList().isEmpty()) {
-            return false;
-        }else return true;
-    }
-
-    private void initDB(){
-        if(dbHelper == null) dbHelper = new DBHelper(getApplicationContext());
-        if(database == null) database = dbHelper.getWritableDatabase();
-    }
-
-    private void closeDB(){
-        if(dbHelper != null) dbHelper.close();
-        if(database != null) database.close();
-    }
-
-    private void insertDB() {
+    private void insertDB(Context context) {
         ContentValues contentValues = new ContentValues();
 
         for(UserVK userVK : UserVK.getUsersList()) {
@@ -152,15 +109,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             DateTimeFormatter fmt = DateTimeFormat.forPattern(userVK.getDateFormat());
             String bdate = fmt.print(birthDate);
 
-            contentValues.put(dbHelper.KEY_NAME, userVK.getName());
-            contentValues.put(dbHelper.KEY_AVATAR_URL, userVK.getAvatarURL());
-            contentValues.put(dbHelper.KEY_BDATE, bdate);
-            contentValues.put(dbHelper.KEY_DATE_FORMAT, userVK.getDateFormat());
+            int notify;
+            if (userVK.isNotify()) notify = 1; else notify = 0;
 
-            database.insert(DBHelper.TABLE_USERS, null, contentValues);
+            contentValues.put(DBHelper.getDbHelper(context).KEY_NAME, userVK.getName());
+            contentValues.put(DBHelper.getDbHelper(context).KEY_AVATAR_URL, userVK.getAvatarURL());
+            contentValues.put(DBHelper.getDbHelper(context).KEY_BDATE, bdate);
+            contentValues.put(DBHelper.getDbHelper(context).KEY_DATE_FORMAT, userVK.getDateFormat());
+            contentValues.put(DBHelper.getDbHelper(context).KEY_NOTIFY, notify);
+
+            DBHelper.getDatabase(context).insert(DBHelper.TABLE_USERS, null, contentValues);
         }
     }
-
     private void initTabs() {
         Log.d("VkAppDP", "initTabs ");
         viewPager =(ViewPager) findViewById(R.id.ViewPager);
@@ -251,7 +211,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             format = formats[i];
                             try {
                                 birthDate = DateTimeFormat.forPattern(format).parseDateTime(userFull.bdate);
-                                UserVK.getUsersList().add(new UserVK(userFull.toString(), birthDate, format,avatarURL));
+                                UserVK.getUsersList().add(new UserVK(userFull.toString(), birthDate, format,avatarURL,false));
 
                             } catch (Exception ignored) {
                                 Log.d("VkApp", "Exception ignore " + response);
@@ -263,9 +223,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 }
                 Collections.sort(UserVK.getUsersList());
-                insertDB();
-                closeDB();
-                createNotificationFromUserList();
+                insertDB(getApplicationContext());
+                DBHelper.closeDB();
+                createNotification();
                 progressBar.setVisibility(ProgressBar.INVISIBLE);
                 initTabs();
             }
@@ -290,33 +250,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         });
     }
 
-
-    private void createNotificationFromUserList(){
-
+    private void createNotification(){
         List<UserVK> userVKList=UserVK.getUsersList();
-
         if(!userVKList.isEmpty()) {
-
-            Log.d("VkAppDP", "createNotificationFromUserList ");
-
-            for (int position = 0; position < userVKList.size(); position++) {
-
-                long day = UserVK.getDayToNextBirht(userVKList.get(position).getBirthDate());
-                NotificationPublisher.scheduleNotification(getApplicationContext(), dayToMillis(day), position, userVKList.get(position).getAvatarURL());
-            }
-        }else Log.d("VkAppDP", "createNotificationFromUserList -- Empty ");
+            Log.d("VkAppDP", "createNotification ");
+                long day = userVKList.get(0).getDayToNextBirht();
+                NotificationPublisher.scheduleNotification(getApplicationContext(), NotificationPublisher.dayToMillis(day), 0, userVKList.get(0).getAvatarURL());
+        }else Log.d("VkAppDP", "createNotification -- Empty ");
     }
 
-    private long dayToMillis(long day){
-
-        LocalDateTime now = new LocalDateTime();
-
-        int hours,minute,second;
-        hours = now.getHourOfDay();
-        minute = now.getMinuteOfHour();
-        second = now.getSecondOfMinute();
-
-        long millis = day*86400000-(3600000*hours+60000*minute+1000*second);
-        return millis;
-    }
 }

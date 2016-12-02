@@ -1,18 +1,23 @@
 package org.bogdan.remindme.adapter;
 
+import android.content.ContentValues;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
 import org.bogdan.remindme.R;
+import org.bogdan.remindme.content.AlarmClock;
 import org.bogdan.remindme.content.UserVK;
+import org.bogdan.remindme.database.DBHelper;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -42,7 +47,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
     }
 
     @Override
-    public void onBindViewHolder(RemindViewHollder holder, int position) {
+    public void onBindViewHolder(RemindViewHollder holder, final int position) {
 
         if(!data.isEmpty()) {
             if(data.get(position).getAvatarURL()!=null){
@@ -56,6 +61,24 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
                         "\n"+"next birht: "+UserVK.getTimeToNextBirht(data.get(position)));
             }
 
+            holder.checkBoxVIP.setChecked(data.get(position).isNotify());
+            holder.checkBoxVIP.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    UserVK userVK = data.get(position);
+                    userVK.setNotify(isChecked);
+                    ContentValues contentValues = new ContentValues();
+                    DBHelper.putUserValue(view.getContext(), userVK, contentValues);
+
+                    int userVKIdDB = position + 1;
+                    String strUserVKIdDB = String.valueOf(userVKIdDB);
+                    DBHelper.getDatabase(view.getContext()).update(DBHelper.TABLE_USERS, contentValues, DBHelper.KEY_ID+ "=?", new String[] {strUserVKIdDB} );
+
+                    data.get(position).setNotify(isChecked);
+
+                    Toast.makeText(view.getContext(), ""+position, Toast.LENGTH_SHORT).show();
+                }
+            });
         }
     }
     @Override

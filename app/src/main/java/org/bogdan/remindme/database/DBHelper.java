@@ -9,6 +9,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import org.bogdan.remindme.content.AlarmClock;
+import org.bogdan.remindme.content.UserVK;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.util.List;
 
@@ -28,6 +32,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String KEY_BDATE = "bdate";
     public static final String KEY_DATE_FORMAT = "date_format";
     public static final String KEY_AVATAR_URL = "avatar_url";
+    public static final String KEY_NOTIFY = "notify";
 
     public static final String KEY_ID_ALARM = "_id";
     public static final String KEY_HOUR_ALARM = "hour";
@@ -58,6 +63,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 + KEY_NAME + " text,"
                 + KEY_DATE_FORMAT + " text,"
                 + KEY_AVATAR_URL + " text,"
+                + KEY_NOTIFY + " numeric,"
                 + KEY_BDATE +" text"+")");
 
         db.execSQL("create table "+ TABLE_ALARMS
@@ -193,4 +199,42 @@ public class DBHelper extends SQLiteOpenHelper {
         }else contentValues.put(DBHelper.getDbHelper(context).KEY_SUNDAY_ALARM, 0);
     }
 
+    public static boolean readUserVKTable(Context context, List<UserVK> userVKList) {
+        userVKList.clear();
+        Cursor cursor = DBHelper.getDatabase(context).query(DBHelper.TABLE_USERS ,null ,null ,null ,null ,null ,null);
+        if(cursor.moveToFirst()){
+            int idIndex = cursor.getColumnIndex(DBHelper.KEY_ID);
+            int nameIndex = cursor.getColumnIndex(DBHelper.KEY_NAME);
+            int avatarURLIndex = cursor.getColumnIndex(DBHelper.KEY_AVATAR_URL);
+            int bdateIndex = cursor.getColumnIndex(DBHelper.KEY_BDATE);
+            int dateFormatIndex = cursor.getColumnIndex(DBHelper.KEY_DATE_FORMAT);
+            int notifyIndex = cursor.getColumnIndex(DBHelper.KEY_NOTIFY);
+
+            do{
+                boolean notify;
+                if (cursor.getInt(notifyIndex) == 1) notify = true; else notify = false;
+                DateTime birthDate = DateTimeFormat.forPattern(cursor.getString(dateFormatIndex)).parseDateTime(cursor.getString(bdateIndex));
+                userVKList.add(new UserVK(cursor.getString(nameIndex), birthDate, cursor.getString(dateFormatIndex), cursor.getString(avatarURLIndex),notify));
+
+            }while (cursor.moveToNext());
+        }else Log.d("DB","0 rows");
+        cursor.close();
+        if(userVKList.isEmpty()) {
+            return false;
+        }else return true;
+    }
+    public static void putUserValue(Context context, UserVK userVK, ContentValues contentValues){
+        DateTime birthDate = userVK.getBirthDate();
+        DateTimeFormatter fmt = DateTimeFormat.forPattern(userVK.getDateFormat());
+        String bdate = fmt.print(birthDate);
+
+        int notify;
+        if (userVK.isNotify()) notify = 1; else notify = 0;
+
+        contentValues.put(DBHelper.getDbHelper(context).KEY_NAME, userVK.getName());
+        contentValues.put(DBHelper.getDbHelper(context).KEY_AVATAR_URL, userVK.getAvatarURL());
+        contentValues.put(DBHelper.getDbHelper(context).KEY_BDATE, bdate);
+        contentValues.put(DBHelper.getDbHelper(context).KEY_DATE_FORMAT, userVK.getDateFormat());
+        contentValues.put(DBHelper.getDbHelper(context).KEY_NOTIFY, notify);
+    }
 }

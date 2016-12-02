@@ -194,11 +194,10 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
         String description="";
         int hour;
         int minute;
-        int position = -1;
+        int position = 0;
         @Override
         public boolean setViewValue(View view, Object data, String textRepresentation) {
-            if (position > AlarmClock.getAlarmList().size() - 1) position = -1;
-            position++;
+            if (position > AlarmClock.getAlarmList().size() - 1) position = 0;
             switch (view.getId()){
                 case R.id.textTime:
                     int[] timeArray = (int[]) data;
@@ -245,18 +244,20 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
                     ((TextView) view).setText(description);
                     return true;
                 case R.id.cbEnable:
+                    ((CheckBox) view).setOnCheckedChangeListener(null);
                     boolean checked = (boolean) data;
                     ((CheckBox) view).setChecked(checked);
-                    //Log.d(DEBUG_TAG, "setViewValue cbEnable- "+checked);
-                    //Log.d(DEBUG_TAG, "setViewValue:AlarmPosition- "+position);
-                    //Log.d(DEBUG_TAG, "setViewValue AlarmListElemActive- "+AlarmClock.getAlarmList().get(position).isActive());
-                    //((CheckBox) view).setOnCheckedChangeListener(this);
+                    ((CheckBox) view).setTag(position);
+                    ((CheckBox) view).setOnCheckedChangeListener(this);
+                    position++;
                     return true;
             }
             return false;
         }
         @Override
         public void onCheckedChanged(CompoundButton buttonView,boolean isChecked) {
+            int position = (int) buttonView.getTag();
+
             AlarmClock alarmClock = AlarmClock.getAlarmList().get(position);
             ContentValues contentValues = new ContentValues();
             DBHelper.putAlarmValue(getContext(), contentValues, alarmClock.getDescription(), isChecked, alarmClock.getAlarmDays(), alarmClock.getHour(), alarmClock.getMinute());
@@ -266,8 +267,7 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
             DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM + "=?", new String[] {strAlarmIdDb} );
 
             AlarmClock.getAlarmList().get(position).setActive(isChecked);
-
-            Toast.makeText(getContext(), String.valueOf(position), Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getContext(), String.valueOf(position), Toast.LENGTH_SHORT).show();
         }
     }
 }
