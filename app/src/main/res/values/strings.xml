@@ -9,7 +9,8 @@
     <string name="str_help">Help</string>
     <string name="str_notification">Notification</string>
     <string name="str_birthday">Today Birhtday</string>
-    <string name="str_checkbox_text">Notify earlier(3 day)</string>
+    <string name="str_birthday_soon">Soon Birhtday(3day)</string>
+    <string name="str_checkbox_text">Notify earlier(3day)</string>
 
     <string name="view_navigation_open">Open</string>
     <string name="view_navigation_close">Close</string>

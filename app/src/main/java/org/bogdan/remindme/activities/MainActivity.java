@@ -255,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if(!userVKList.isEmpty()) {
             Log.d("VkAppDP", "createNotification ");
                 long day = userVKList.get(0).getDayToNextBirht();
-                NotificationPublisher.scheduleNotification(getApplicationContext(), NotificationPublisher.dayToMillis(day), 0, userVKList.get(0).getAvatarURL());
+                NotificationPublisher.scheduleNotification(getApplicationContext(), 0, userVKList.get(0));
         }else Log.d("VkAppDP", "createNotification -- Empty ");
     }
 

@@ -40,6 +40,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String KEY_DESC_ALARM = "description";
     public static final String KEY_TIME_TEXT_ALARM = "time_text";
     public static final String KEY_ACTIVE_ALARM = "active";
+    public static final String KEY_RINGTONE_URI_ALARM = "ringtone_uri";
     public static final String KEY_MONDAY_ALARM = "monday";
     public static final String KEY_TUESDAY_ALARM = "tuesday";
     public static final String KEY_WEDNESDAY_ALARM = "wednesday";
@@ -76,6 +77,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 + KEY_FRIDAY_ALARM + " numeric,"
                 + KEY_SATURDAY_ALARM + " numeric,"
                 + KEY_SUNDAY_ALARM + " numeric,"
+                + KEY_RINGTONE_URI_ALARM + " numeric,"
                 + KEY_DESC_ALARM + " text,"
                 + KEY_HOUR_ALARM + " integer,"
                 + KEY_MINUTE_ALARM + " integer,"
@@ -131,6 +133,7 @@ public class DBHelper extends SQLiteOpenHelper {
             int idInd = cursor.getColumnIndex(DBHelper.KEY_ID_ALARM);
             int hourInd = cursor.getColumnIndex(DBHelper.KEY_HOUR_ALARM);
             int minuteInd = cursor.getColumnIndex(DBHelper.KEY_MINUTE_ALARM);
+            int ringtoneUriInd = cursor.getColumnIndex(DBHelper.KEY_RINGTONE_URI_ALARM);
 
             do{
                 int id = cursor.getInt(idInd);
@@ -148,7 +151,9 @@ public class DBHelper extends SQLiteOpenHelper {
                 int hour = cursor.getInt(hourInd);
                 int minute = cursor.getInt(minuteInd);
 
-                AlarmClock alarmClock = new AlarmClock(alarmDays, hour, minute, desc, active, alarmList);
+                String ringtoneURI = cursor.getString(ringtoneUriInd);
+
+                AlarmClock alarmClock = new AlarmClock(alarmDays, hour, minute, desc, active, ringtoneURI, alarmList);
                 alarmList.add(alarmClock);
             }while (cursor.moveToNext());
         }else Log.d("DebugDB","0 rows");
@@ -157,9 +162,11 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public static void putAlarmValue(Context context, ContentValues contentValues, String descString, boolean active, boolean [] daysArray, int hour, int minute) {
+    public static void putAlarmValue(Context context, ContentValues contentValues, String descString, String ringtoneURI, boolean active, boolean[] daysArray, int hour, int minute) {
 
         contentValues.put(DBHelper.getDbHelper(context).KEY_DESC_ALARM, descString);
+
+        contentValues.put(DBHelper.getDbHelper(context).KEY_RINGTONE_URI_ALARM, ringtoneURI);
 
         contentValues.put(DBHelper.getDbHelper(context).KEY_TIME_TEXT_ALARM, hour+":"+minute);
 

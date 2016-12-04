@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Process;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.text.AlteredCharSequence;
 import android.util.Log;
 import android.view.WindowManager;
 
@@ -41,8 +42,8 @@ public class AlarmDialogActivity extends Activity {
     }
 
     private void displayAlert() {
-
-        Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        //Uri uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+        Uri uri = Uri.parse(getIntent().getStringExtra("ringtone"));
         final Ringtone ringtone = RingtoneManager.getRingtone(this, uri);
         ringtone.play();
 
@@ -50,7 +51,13 @@ public class AlarmDialogActivity extends Activity {
         builder.setTitle("Alarm");
         builder.setMessage(getIntent().getStringExtra("description"))
                 .setCancelable(false)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                .setNeutralButton("Set aside", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                })
+                .setNeutralButton("Close", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         ringtone.stop();
                         finish();

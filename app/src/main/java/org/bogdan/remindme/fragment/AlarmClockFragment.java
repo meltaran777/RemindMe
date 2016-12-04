@@ -2,16 +2,12 @@ package org.bogdan.remindme.fragment;
 
 import android.app.Activity;
 import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,21 +17,11 @@ import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.bogdan.remindme.R;
 import org.bogdan.remindme.activities.AddAlarmActivity;
-import org.bogdan.remindme.activities.AlarmDialogActivity;
 import org.bogdan.remindme.content.AlarmClock;
 import org.bogdan.remindme.database.DBHelper;
-import org.bogdan.remindme.util.AlarmReceiver;
-import org.joda.time.Hours;
-import org.joda.time.LocalTime;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by Bodia on 28.10.2016.
@@ -105,11 +91,12 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
         int alarmId = data.getIntExtra("alarmId", -1);
         boolean active = data.getBooleanExtra("active",false);
         String descString = data.getStringExtra("descText");
+        String ringtoneURI = data.getStringExtra("ringtone");
 
         if (resultCode == Activity.RESULT_OK) {
-            AlarmClock alarmClock = new AlarmClock(daysArray, hour, minute, descString, active, AlarmClock.getAlarmList());
+            AlarmClock alarmClock = new AlarmClock(daysArray, hour, minute, descString, active, ringtoneURI, AlarmClock.getAlarmList());
             ContentValues contentValues = new ContentValues();
-            DBHelper.putAlarmValue(getContext(), contentValues, descString, active, daysArray, hour, minute);
+            DBHelper.putAlarmValue(getContext(), contentValues, descString, ringtoneURI , active, daysArray, hour, minute);
             if (alarmId >= 0){
                 //update record in DB
                 int alarmIdDB = alarmId+1;
@@ -260,7 +247,7 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
 
             AlarmClock alarmClock = AlarmClock.getAlarmList().get(position);
             ContentValues contentValues = new ContentValues();
-            DBHelper.putAlarmValue(getContext(), contentValues, alarmClock.getDescription(), isChecked, alarmClock.getAlarmDays(), alarmClock.getHour(), alarmClock.getMinute());
+            DBHelper.putAlarmValue(getContext(), contentValues, alarmClock.getDescription(), alarmClock.getRingtoneURI(), isChecked, alarmClock.getAlarmDays(), alarmClock.getHour(), alarmClock.getMinute());
 
             int alarmIdDB = alarmClock.getAlarmId() + 1;
             String strAlarmIdDb = String.valueOf(alarmIdDB);

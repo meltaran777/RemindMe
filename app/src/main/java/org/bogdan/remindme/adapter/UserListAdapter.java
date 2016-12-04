@@ -18,6 +18,7 @@ import org.bogdan.remindme.R;
 import org.bogdan.remindme.content.AlarmClock;
 import org.bogdan.remindme.content.UserVK;
 import org.bogdan.remindme.database.DBHelper;
+import org.bogdan.remindme.util.NotificationPublisher;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -65,6 +66,10 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
             holder.checkBoxVIP.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    //Create notification if
+                    if ((data.get(position).getDayToNextBirht() -  data.get(0).getDayToNextBirht()) < 3){
+                        NotificationPublisher.scheduleNotification(view.getContext(),0,data.get(position));
+                    }
                     UserVK userVK = data.get(position);
                     userVK.setNotify(isChecked);
                     ContentValues contentValues = new ContentValues();
@@ -75,8 +80,9 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
                     DBHelper.getDatabase(view.getContext()).update(DBHelper.TABLE_USERS, contentValues, DBHelper.KEY_ID+ "=?", new String[] {strUserVKIdDB} );
 
                     data.get(position).setNotify(isChecked);
-
-                    Toast.makeText(view.getContext(), ""+position, Toast.LENGTH_SHORT).show();
+                    //Test Notification
+                   // NotificationPublisher.scheduleNotification(view.getContext(), 0, position, data.get(position),
+                   //         data.get(position).getAvatarURL(), data.get(position).isNotify());
                 }
             });
         }

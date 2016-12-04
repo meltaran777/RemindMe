@@ -3,6 +3,8 @@ package org.bogdan.remindme.activities;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -11,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import org.bogdan.remindme.R;
 import org.bogdan.remindme.content.AlarmClock;
@@ -21,7 +24,7 @@ import java.util.Calendar;
 import java.util.List;
 
 public class AddAlarmActivity extends AppCompatActivity implements View.OnClickListener {
-
+private final static int SOUND_PICKER_RESULT_CODE = 1;
     private EditText editText;
     private Button btnRepeat;
     private Button btnCancel;
@@ -67,20 +70,29 @@ public class AddAlarmActivity extends AppCompatActivity implements View.OnClickL
             boolean active = intent.getBooleanExtra("alarmActive",false);
             if (alarmId >= 0) {
                 int hour = AlarmClock.getAlarmList().get(alarmId).getHour();
-                //if (hour < 12) hour+=12;
                 switchCompat.setChecked(active);
                 editText.setText(AlarmClock.getAlarmList().get(alarmId).getDescription());
                 timePicker.setCurrentHour(hour);
                 timePicker.setCurrentMinute(AlarmClock.getAlarmList().get(alarmId).getMinute());
                 checkedDay = AlarmClock.getAlarmList().get(alarmId).getAlarmDays();
+                ringtoneURI = AlarmClock.getAlarmList().get(alarmId).getRingtoneURI();
                 btnRepeatSetText();
             }
         }
     }
-
-
-
-
+    String ringtoneURI = null;
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK)
+        {
+            Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
+            if (uri != null){
+                ringtoneURI = uri.toString();
+            }
+            else ringtoneURI = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString();
+        }
+    }
     @Override
     public void onClick(View v) {
         Intent intent;
@@ -98,6 +110,7 @@ public class AddAlarmActivity extends AppCompatActivity implements View.OnClickL
                 intent.putExtra("descText",descText);
                 intent.putExtra("alarmId",alarmId);
                 intent.putExtra("active",active);
+                intent.putExtra("ringtone",ringtoneURI);
                 setResult(Activity.RESULT_OK,intent);
 
                 finish();
@@ -109,7 +122,6 @@ public class AddAlarmActivity extends AppCompatActivity implements View.OnClickL
                 finish();
                 break;
             case R.id.btn_repeat:
-
                 AlertDialog.Builder builder = new AlertDialog.Builder(AddAlarmActivity.this);
                 builder.setIcon(R.drawable.ic_inf);
                 builder.setTitle("Select Day of Week");
@@ -144,6 +156,19 @@ public class AddAlarmActivity extends AppCompatActivity implements View.OnClickL
 
                 AlertDialog dialog = builder.create();
                 dialog.show();
+                break;
+            case R.id.btn_sound:
+                Uri currentTone= RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM);
+                if (ringtoneURI != null) currentTone = Uri.parse(ringtoneURI);
+
+                Intent soundPickerIntent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
+                soundPickerIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM | RingtoneManager.TYPE_RINGTONE);
+                soundPickerIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false);
+                soundPickerIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true);
+                soundPickerIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM));
+                soundPickerIntent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, currentTone);
+
+                startActivityForResult(soundPickerIntent, SOUND_PICKER_RESULT_CODE);
                 break;
         }
 

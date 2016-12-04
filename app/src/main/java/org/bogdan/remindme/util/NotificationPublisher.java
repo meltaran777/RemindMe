@@ -42,37 +42,43 @@ public class NotificationPublisher extends BroadcastReceiver {
     public static String NOTIFICATION_ID = "notification_id";
     public static String NOTIFICATION = "notification";
 
+    Bitmap avatar;
+
     @Override
      public void onReceive(final Context context, Intent intent) {
         JodaTimeAndroid.init(context);
-        //Show notification
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-        Notification notification = intent.getParcelableExtra(NOTIFICATION);
-        int notificationId = intent.getIntExtra(NOTIFICATION_ID, 0);
-        notificationManager.notify(notificationId, notification);
-
         //Create next notification
         List<UserVK> userVKList = new ArrayList<>();
         DBHelper.readUserVKTable(context, userVKList);
+        DBHelper.closeDB();
 
         List<UserVK> userVKListFull = UserVK.getUserVKListFull(userVKList);
         Collections.sort(userVKListFull);
+        UserVK userVK = userVKListFull.get(0);
 
-        scheduleNotification(context, dayToMillis(userVKListFull.get(0).getDayToNextBirht()),0,userVKListFull.get(0).getAvatarURL());
+        scheduleNotification(context,0,userVK);
+        //Show notification
+        if (!intent.getAction().equalsIgnoreCase("android.intent.action.BOOT_COMPLETED")) {
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+            Notification notification = intent.getParcelableExtra(NOTIFICATION);
+            int notificationId = intent.getIntExtra(NOTIFICATION_ID, 0);
+            notificationManager.notify(notificationId, notification);
+        }
+
     }
-
-    private static NotificationCompat.Builder builder;
-
-    public static void scheduleNotification(Context context, long delay, int notificationId, String largeIconUrl) {
+    public static void scheduleNotification(Context context, int notificationId, UserVK userVK) {
+        final NotificationCompat.Builder builder;
+        long delay = dayToMillis(userVK.getDayToNextBirht());
+        boolean original = userVK.isNotify();
+        String largeIconUrl = userVK.getAvatarURL();
 
         builder = new NotificationCompat.Builder(context)
-                .setContentTitle(context.getString(R.string.str_birthday))
-                .setContentText(UserVK.getUsersList().get(notificationId).getName())
+                .setContentText(userVK.getName())
                 .setAutoCancel(true)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION));
-
+        if (original) builder.setContentTitle(context.getString(R.string.str_birthday)); else builder.setContentTitle(context.getString(R.string.str_birthday_soon));
         Picasso.with(context).load(largeIconUrl).into(new Target() {
             @Override
             public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
@@ -81,7 +87,6 @@ public class NotificationPublisher extends BroadcastReceiver {
 
             @Override
             public void onBitmapFailed(Drawable errorDrawable) {
-
 
             }
 
@@ -108,12 +113,13 @@ public class NotificationPublisher extends BroadcastReceiver {
 
     public static long dayToMillis(long day){
         LocalDateTime now = new LocalDateTime();
-        int hours,minute,second;
+        int hours,minute,second,millisOfSecond;
         hours = now.getHourOfDay();
         minute = now.getMinuteOfHour();
         second = now.getSecondOfMinute();
-        long millis = day*86400000-(3600000*hours+60000*minute+1000*second);
+        millisOfSecond = now.getMillisOfSecond();
 
+        long millis = day*86400000-(3600000*hours+60000*minute+1000*second+millisOfSecond);
         return millis;
     }
 }
