@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.SystemClock;
 import android.util.Log;
 
+import org.bogdan.remindme.activities.AlarmDialogActivity;
 import org.bogdan.remindme.database.DBHelper;
 import org.bogdan.remindme.util.AlarmReceiver;
 import org.joda.time.LocalDateTime;
@@ -30,11 +31,21 @@ public class AlarmClock implements Comparable<AlarmClock> {
     private static final String DEBUG_DELAY = "DebugDelay";
 
     final static String ATTRIBUTE_NAME_TIME = "time";
-    final static String ATTRIBUTE_NAME_WHEN = "when";
+    final static String ATTRIBUTE_NAME_MN = "mn";
+    final static String ATTRIBUTE_NAME_TS = "ts";
+    final static String ATTRIBUTE_NAME_WD = "wd";
+    final static String ATTRIBUTE_NAME_TH = "th";
+    final static String ATTRIBUTE_NAME_FR = "fr";
+    final static String ATTRIBUTE_NAME_ST = "st";
+    final static String ATTRIBUTE_NAME_SN = "sn";
     final static String ATTRIBUTE_NAME_DISC = "disc";
     final static String ATTRIBUTE_NAME_ENABLE = "checkbox";
 
-    final static String[] from = { ATTRIBUTE_NAME_TIME, ATTRIBUTE_NAME_WHEN, ATTRIBUTE_NAME_DISC ,ATTRIBUTE_NAME_ENABLE};
+    final static String[] from = { ATTRIBUTE_NAME_TIME,
+            ATTRIBUTE_NAME_MN,ATTRIBUTE_NAME_TS,ATTRIBUTE_NAME_WD,ATTRIBUTE_NAME_TH,ATTRIBUTE_NAME_FR,ATTRIBUTE_NAME_ST,ATTRIBUTE_NAME_SN,
+            ATTRIBUTE_NAME_DISC ,ATTRIBUTE_NAME_ENABLE};
+    public static final String ALARM_CLOCK_CREATE_ACTION = "org.bogdan.remindme.CREATE_ALARM";
+    private static final String ALARM_CANCEL_ACTION = "org.bogdan.remindme.CANCEL_ALARM";
 
     private static List<AlarmClock> alarmList = new ArrayList<>();
     private static List<AlarmClock> alarmListFull = new ArrayList<>();
@@ -68,11 +79,18 @@ public class AlarmClock implements Comparable<AlarmClock> {
 
             int minute = getAlarmList().get(i).getMinute();
             int hour = getAlarmList().get(i).getHour();
-            int arrayInt[] = {hour,minute};
+            int id = getAlarmList().get(i).getAlarmId();
+            int arrayInt[] = {hour,minute,id};
 
             m = new HashMap<String, Object>();
             m.put(ATTRIBUTE_NAME_TIME, arrayInt);
-            m.put(ATTRIBUTE_NAME_WHEN, getAlarmList().get(i).getAlarmDays());
+            m.put(ATTRIBUTE_NAME_MN, getAlarmList().get(i).getAlarmDays());
+            m.put(ATTRIBUTE_NAME_TS, getAlarmList().get(i).getAlarmDays());
+            m.put(ATTRIBUTE_NAME_WD, getAlarmList().get(i).getAlarmDays());
+            m.put(ATTRIBUTE_NAME_TH, getAlarmList().get(i).getAlarmDays());
+            m.put(ATTRIBUTE_NAME_FR, getAlarmList().get(i).getAlarmDays());
+            m.put(ATTRIBUTE_NAME_ST, getAlarmList().get(i).getAlarmDays());
+            m.put(ATTRIBUTE_NAME_SN, getAlarmList().get(i).getAlarmDays());
             m.put(ATTRIBUTE_NAME_DISC, getAlarmList().get(i).getDescription());
             m.put(ATTRIBUTE_NAME_ENABLE, getAlarmList().get(i).isActive());
             data.add(m);
@@ -211,16 +229,21 @@ public class AlarmClock implements Comparable<AlarmClock> {
                         int alarmIdDB = alarmClockActive.getAlarmId()+1;
                         String strAlarmIdDb = String.valueOf(alarmIdDB);
                         ContentValues contentValues = new ContentValues();
-                        DBHelper.putAlarmValue(context, contentValues, alarmClockActive.getDescription(), alarmClock.getRingtoneURI(), false, alarmClockActive.getAlarmDays(), alarmClockActive.getHour(), alarmClockActive.getMinute());
+                        DBHelper.putAlarmValue(context, contentValues, alarmClockActive.getDescription(), alarmClockActive.getRingtoneURI(), false, alarmClockActive.getAlarmDays(), alarmClockActive.getHour(), alarmClockActive.getMinute());
+                        //DBHelper.putAlarmValue(context, contentValues, alarmClockActive);
 
                         Log.d(DEBUG_TAG, "Active = "+alarmClockActive.isActive() + " ID = "+alarmClockActive.getAlarmId()+" Desc "+alarmClockActive.getDescription());
                         Log.d(DEBUG_TAG, "AlarmId DB = "+strAlarmIdDb);
                         DBHelper.getDatabase(context).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM + "=?", new String[] {strAlarmIdDb} );
+                        //DBHelper.getDatabase(context).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[] {strAlarmIdDb} );
                     }
                 }
                 Intent alarmIntent = new Intent(context, AlarmReceiver.class);
+                alarmIntent.setAction(ALARM_CLOCK_CREATE_ACTION);
                 alarmIntent.putExtra("description",alarmClock.getDescription());
                 alarmIntent.putExtra("ringtone",alarmClock.getRingtoneURI());
+                alarmIntent.putExtra("hour",alarmClock.getHour());
+                alarmIntent.putExtra("minute",alarmClock.getMinute());
                 PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
                 am.set(AlarmManager.RTC_WAKEUP, getAlarmTimeInMillis(alarmClock), alarmPendingIntent);
@@ -229,6 +252,28 @@ public class AlarmClock implements Comparable<AlarmClock> {
             }
         }
         return false;
+    }
+
+    public static void createAlarm(Context context, AlarmManager alarmMgr,Intent alarmIntent, long delay, int id){
+        PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context,id,alarmIntent,PendingIntent.FLAG_CANCEL_CURRENT);
+        alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()+delay, alarmPendingIntent);
+    }
+
+
+    public static  void cancelAlarmDialogShowAction(Context context, AlarmManager alarmMgr, int id){
+        Intent alarmIntent = new Intent(context, AlarmReceiver.class);
+        alarmIntent.putExtra("show",false);
+        alarmIntent.setAction(AlarmDialogActivity.ALARM_DIALOG_ACTION);
+        PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, id, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), alarmPendingIntent);
+    }
+
+    public static void recreateAlarmListId() {
+        int i=0;
+        for (AlarmClock clock : getAlarmList()){
+            clock.setAlarmId(i);
+            i++;
+        }
     }
 
     public boolean isSingle(){
@@ -269,14 +314,6 @@ public class AlarmClock implements Comparable<AlarmClock> {
         this.alarmId = alarmId;
     }
 
-    public PendingIntent getAlarmPendingIntent() {
-        return alarmPendingIntent;
-    }
-
-    public void setAlarmPendingIntent(PendingIntent alarmPendingIntent) {
-        this.alarmPendingIntent = alarmPendingIntent;
-    }
-
     public int getAlarmId() {
         return alarmId;
     }
@@ -289,6 +326,14 @@ public class AlarmClock implements Comparable<AlarmClock> {
         return ringtoneURI;
     }
 
+    public PendingIntent getAlarmPendingIntent() {
+        return alarmPendingIntent;
+    }
+
+    public void setAlarmPendingIntent(PendingIntent alarmPendingIntent) {
+        this.alarmPendingIntent = alarmPendingIntent;
+    }
+
     public Intent getAlarmIntent() {
         return alarmIntent;
     }
@@ -296,7 +341,6 @@ public class AlarmClock implements Comparable<AlarmClock> {
     public void setAlarmIntent(Intent alarmIntent) {
         this.alarmIntent = alarmIntent;
     }
-
     public static void setArrayMapElem(int i){
         Map<String, Object> m;
         m = new HashMap<String, Object>();
@@ -306,7 +350,7 @@ public class AlarmClock implements Comparable<AlarmClock> {
         int arrayInt[] = {hour,minute};
 
         m.put(ATTRIBUTE_NAME_TIME, arrayInt);
-        m.put(ATTRIBUTE_NAME_WHEN, getAlarmList().get(i).getAlarmDays());
+        //m.put(ATTRIBUTE_NAME_WHEN, getAlarmList().get(i).getAlarmDays());
         m.put(ATTRIBUTE_NAME_DISC, getAlarmList().get(i).getDescription());
         m.put(ATTRIBUTE_NAME_ENABLE, getAlarmList().get(i).isActive());
         data.set(i,m);
@@ -321,31 +365,16 @@ public class AlarmClock implements Comparable<AlarmClock> {
         int arrayInt[] = {hour,minute};
 
         m.put(ATTRIBUTE_NAME_TIME, arrayInt);
-        m.put(ATTRIBUTE_NAME_WHEN, getAlarmList().get(i).getAlarmDays());
+        //m.put(ATTRIBUTE_NAME_WHEN, getAlarmList().get(i).getAlarmDays());
         m.put(ATTRIBUTE_NAME_DISC, getAlarmList().get(i).getDescription());
         m.put(ATTRIBUTE_NAME_ENABLE, getAlarmList().get(i).isActive());
         data.add(m);
     }
+
     public static List<String> getStringAlarmList() {
         List<String> alarmStringList=new ArrayList<>();
         for(AlarmClock alarm:getAlarmList()) alarmStringList.add(alarm.toString());
         return alarmStringList;
-    }
-
-    public static  void createAlarm(Context context, AlarmManager alarmMgr, long delay, int id, String description){
-        Intent alarmIntent = new Intent(context, AlarmReceiver.class);
-        alarmIntent.putExtra("description",description);
-        PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context,id,alarmIntent,PendingIntent.FLAG_CANCEL_CURRENT);
-        AlarmClock.getAlarmList().get(id).setAlarmPendingIntent(alarmPendingIntent);
-
-        //Log.d(DEBUG_TAG,"Create alarm: "+"ID "+id+" Delay "+delay);
-        alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()+delay, AlarmClock.getAlarmList().get(id).getAlarmPendingIntent());
-    }
-
-
-    public static  void cancelAlarm(AlarmManager alarmMgr, PendingIntent alarmPendingIntent){
-        //Log.d(DEBUG_TAG,"Cancel pendingIntent");
-        alarmMgr.cancel(alarmPendingIntent);
     }
 
     public static long calcDelay(int hour, int minute){

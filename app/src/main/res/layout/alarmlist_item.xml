@@ -15,7 +15,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_weight="1"
+        android:layout_weight="0"
         android:paddingTop="2dp">
 
     <TextView
@@ -32,32 +32,98 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:paddingLeft="30dp"
+        android:layout_gravity="left"
         android:layout_weight="2">
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="1">
         <TextView
             android:hint="Description"
+            android:textColor="@color/Black"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:id="@+id/textDescription"
-            android:layout_weight="1"/>
+            android:layout_gravity="center"
+            android:id="@+id/textDescription" />
+            </LinearLayout>
 
-        <TextView
-            android:hint="Never"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/textWhen"
-            android:layout_weight="1" />
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_weight="1">
+
+            <TextView
+                android:hint="Mn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textMn"
+                android:textColor="@color/Black" />
+            <TextView
+                android:hint="Ts"
+                android:paddingLeft="3dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textTs"
+                android:textColor="@color/Black" />
+            <TextView
+                android:hint="Wd"
+                android:paddingLeft="3dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textWd"
+                android:textColor="@color/Black" />
+            <TextView
+                android:hint="Th"
+                android:paddingLeft="3dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textTh"
+                android:textColor="@color/Black" />
+            <TextView
+                android:hint="Fr"
+                android:paddingLeft="3dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textFr"
+                android:textColor="@color/Black" />
+            <TextView
+                android:hint="St"
+                android:paddingLeft="3dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textSt"
+                android:textColor="@color/Black" />
+            <TextView
+                android:hint="Sn"
+                android:paddingLeft="3dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/textSn"
+                android:textColor="@color/Black" />
+        </LinearLayout>
 
     </LinearLayout>
 
     <!-- android:focusable="false" -->
     <!-- android:focusableInTouchMode="false" -->
-    <android.support.v7.widget.AppCompatCheckBox
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:focusable="false"
-        android:focusableInTouchMode="false"
-        app:buttonTint="@color/colorPrimary"
-        android:id="@+id/cbEnable" />
+        android:paddingTop="2dp"
+        android:layout_weight="0">
+
+        <android.support.v7.widget.AppCompatCheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:focusable="false"
+            android:focusableInTouchMode="false"
+            app:buttonTint="@color/colorPrimary"
+            android:id="@+id/cbEnable" />
+
+    </LinearLayout>
 
 </LinearLayout>

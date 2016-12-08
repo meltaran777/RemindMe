@@ -35,6 +35,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String KEY_NOTIFY = "notify";
 
     public static final String KEY_ID_ALARM = "_id";
+    public static final String KEY_ID_ALARM_UPDATE = "id_update";
     public static final String KEY_HOUR_ALARM = "hour";
     public static final String KEY_MINUTE_ALARM = "minute";
     public static final String KEY_DESC_ALARM = "description";
@@ -81,6 +82,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 + KEY_DESC_ALARM + " text,"
                 + KEY_HOUR_ALARM + " integer,"
                 + KEY_MINUTE_ALARM + " integer,"
+                + KEY_ID_ALARM_UPDATE + " integer,"
                 + KEY_ACTIVE_ALARM +" numeric"+")");
     }
 
@@ -206,6 +208,66 @@ public class DBHelper extends SQLiteOpenHelper {
         }else contentValues.put(DBHelper.getDbHelper(context).KEY_SUNDAY_ALARM, 0);
     }
 
+
+
+
+    public static void putAlarmValue(Context context, ContentValues contentValues,AlarmClock alarmClock) {
+        String descString = alarmClock.getDescription();
+        String ringtoneURI = alarmClock.getRingtoneURI();
+        int hour = alarmClock.getHour();
+        int minute = alarmClock.getMinute();
+        int id = alarmClock.getAlarmId()+1;
+        boolean daysArray[] = alarmClock.getAlarmDays();
+        boolean active = alarmClock.isActive();
+
+        contentValues.put(DBHelper.getDbHelper(context).KEY_ID_ALARM_UPDATE, id);
+
+        contentValues.put(DBHelper.getDbHelper(context).KEY_DESC_ALARM, descString);
+
+        contentValues.put(DBHelper.getDbHelper(context).KEY_RINGTONE_URI_ALARM, ringtoneURI);
+
+        contentValues.put(DBHelper.getDbHelper(context).KEY_TIME_TEXT_ALARM, hour+":"+minute);
+
+        contentValues.put(DBHelper.getDbHelper(context).KEY_HOUR_ALARM, hour);
+        contentValues.put(DBHelper.getDbHelper(context).KEY_MINUTE_ALARM, minute);
+
+        if (active) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_ACTIVE_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_ACTIVE_ALARM, 0);
+
+        if (daysArray[0]) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_MONDAY_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_MONDAY_ALARM, 0);
+
+        if (daysArray[1]) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_TUESDAY_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_TUESDAY_ALARM, 0);
+
+        if (daysArray[2]) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_WEDNESDAY_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_WEDNESDAY_ALARM, 0);
+
+        if (daysArray[3]) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_THURSDAY_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_THURSDAY_ALARM, 0);
+
+        if (daysArray[4]) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_FRIDAY_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_FRIDAY_ALARM, 0);
+
+        if (daysArray[5]) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_SATURDAY_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_SATURDAY_ALARM, 0);
+
+        if (daysArray[6]) {
+            contentValues.put(DBHelper.getDbHelper(context).KEY_SUNDAY_ALARM, 1);
+        }else contentValues.put(DBHelper.getDbHelper(context).KEY_SUNDAY_ALARM, 0);
+    }
+
+
+
+
+
     public static boolean readUserVKTable(Context context, List<UserVK> userVKList) {
         userVKList.clear();
         Cursor cursor = DBHelper.getDatabase(context).query(DBHelper.TABLE_USERS ,null ,null ,null ,null ,null ,null);
@@ -243,5 +305,26 @@ public class DBHelper extends SQLiteOpenHelper {
         contentValues.put(DBHelper.getDbHelper(context).KEY_BDATE, bdate);
         contentValues.put(DBHelper.getDbHelper(context).KEY_DATE_FORMAT, userVK.getDateFormat());
         contentValues.put(DBHelper.getDbHelper(context).KEY_NOTIFY, notify);
+    }
+    public static void insertTableUserVKValue(Context context) {
+        ContentValues contentValues = new ContentValues();
+
+        for(UserVK userVK : UserVK.getUsersList()) {
+
+            DateTime birthDate = userVK.getBirthDate();
+            DateTimeFormatter fmt = DateTimeFormat.forPattern(userVK.getDateFormat());
+            String bdate = fmt.print(birthDate);
+
+            int notify;
+            if (userVK.isNotify()) notify = 1; else notify = 0;
+
+            contentValues.put(DBHelper.getDbHelper(context).KEY_NAME, userVK.getName());
+            contentValues.put(DBHelper.getDbHelper(context).KEY_AVATAR_URL, userVK.getAvatarURL());
+            contentValues.put(DBHelper.getDbHelper(context).KEY_BDATE, bdate);
+            contentValues.put(DBHelper.getDbHelper(context).KEY_DATE_FORMAT, userVK.getDateFormat());
+            contentValues.put(DBHelper.getDbHelper(context).KEY_NOTIFY, notify);
+
+            DBHelper.getDatabase(context).insert(DBHelper.TABLE_USERS, null, contentValues);
+        }
     }
 }

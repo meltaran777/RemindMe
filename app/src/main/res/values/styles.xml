@@ -1,6 +1,9 @@
 <resources>
 
-    <!-- Base application theme. -->
+    <!--    <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:actionBarStyle">@style/MyActionBar</item> -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -21,6 +24,30 @@
     <style name="App_BtnStyle" parent="@style/Widget.AppCompat.Button">
         <item name="android:height">100dip</item>
     </style>
+
+
+
+    <style name="DialogMin" parent="Base.Theme.AppCompat.Light.Dialog.MinWidth">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+
+    <style name="DialogLarge" parent="Base.Theme.AppCompat.Light.Dialog.FixedSize">
+        <item name="android:windowTitleStyle">@style/dialog_title_style</item>
+        </style>
+    <style name="dialog_title_style" parent="android:TextAppearance.StatusBar.Title">
+        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:padding">10dp</item>
+    </style>
+
+
+
+    <style name="OverlayBtn" parent="Theme.AppCompat.Light">
+    <item name="colorPrimary">@color/colorPrimary</item>
+    </style>
+
 
 
 </resources>

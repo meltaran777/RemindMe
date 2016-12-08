@@ -38,7 +38,6 @@ import org.bogdan.remindme.adapter.TabsFragmentAdapter;
 import org.bogdan.remindme.database.DBHelper;
 import org.bogdan.remindme.util.NotificationPublisher;
 import org.joda.time.DateTime;
-import org.joda.time.LocalDateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
@@ -75,18 +74,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         vkLogin();
         initToolbar();
         initNavigationView();
-        if(DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList())) {
-            Collections.sort(UserVK.getUsersList());
-            initTabs();
-            DBHelper.closeDB();
-        }
+        initTabs();
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
             @Override
             public void onResult(VKAccessToken res) {
-                //initDB();
                 if(!DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList())) {
                     vkRequestExecute(getVKFriendsList);
                 }
@@ -100,27 +94,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void insertDB(Context context) {
-        ContentValues contentValues = new ContentValues();
-
-        for(UserVK userVK : UserVK.getUsersList()) {
-
-            DateTime birthDate = userVK.getBirthDate();
-            DateTimeFormatter fmt = DateTimeFormat.forPattern(userVK.getDateFormat());
-            String bdate = fmt.print(birthDate);
-
-            int notify;
-            if (userVK.isNotify()) notify = 1; else notify = 0;
-
-            contentValues.put(DBHelper.getDbHelper(context).KEY_NAME, userVK.getName());
-            contentValues.put(DBHelper.getDbHelper(context).KEY_AVATAR_URL, userVK.getAvatarURL());
-            contentValues.put(DBHelper.getDbHelper(context).KEY_BDATE, bdate);
-            contentValues.put(DBHelper.getDbHelper(context).KEY_DATE_FORMAT, userVK.getDateFormat());
-            contentValues.put(DBHelper.getDbHelper(context).KEY_NOTIFY, notify);
-
-            DBHelper.getDatabase(context).insert(DBHelper.TABLE_USERS, null, contentValues);
-        }
-    }
     private void initTabs() {
         Log.d("VkAppDP", "initTabs ");
         viewPager =(ViewPager) findViewById(R.id.ViewPager);
@@ -130,8 +103,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
     }
-
-
     private void initToolbar() {
         toolbar=(Toolbar) findViewById(R.id.Toolbar);
         toolbar.setTitle(R.string.app_name);
@@ -172,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
+
     private void showNotificationTab(){
         viewPager.setCurrentItem(TAB_TWO);
     }
@@ -188,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void vkRequestExecute(VKRequest currentRequest){
         Log.d("VkAppDP", "vkRequestExecute ");
 
-        progressBar.setVisibility(ProgressBar.VISIBLE);
+        //progressBar.setVisibility(ProgressBar.VISIBLE);
 
         currentRequest.executeWithListener(new VKRequest.VKRequestListener() {
             @Override
@@ -223,11 +195,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     }
                 }
                 Collections.sort(UserVK.getUsersList());
-                insertDB(getApplicationContext());
+                DBHelper.insertTableUserVKValue(getApplicationContext());
                 DBHelper.closeDB();
                 createNotification();
-                progressBar.setVisibility(ProgressBar.INVISIBLE);
-                initTabs();
+                //progressBar.setVisibility(ProgressBar.INVISIBLE);
+                //initTabs();
             }
 
             @Override
@@ -258,5 +230,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 NotificationPublisher.scheduleNotification(getApplicationContext(), 0, userVKList.get(0));
         }else Log.d("VkAppDP", "createNotification -- Empty ");
     }
+    private void insertDB(Context context) {
+        ContentValues contentValues = new ContentValues();
 
+        for(UserVK userVK : UserVK.getUsersList()) {
+
+            DateTime birthDate = userVK.getBirthDate();
+            DateTimeFormatter fmt = DateTimeFormat.forPattern(userVK.getDateFormat());
+            String bdate = fmt.print(birthDate);
+
+            int notify;
+            if (userVK.isNotify()) notify = 1; else notify = 0;
+
+            contentValues.put(DBHelper.getDbHelper(context).KEY_NAME, userVK.getName());
+            contentValues.put(DBHelper.getDbHelper(context).KEY_AVATAR_URL, userVK.getAvatarURL());
+            contentValues.put(DBHelper.getDbHelper(context).KEY_BDATE, bdate);
+            contentValues.put(DBHelper.getDbHelper(context).KEY_DATE_FORMAT, userVK.getDateFormat());
+            contentValues.put(DBHelper.getDbHelper(context).KEY_NOTIFY, notify);
+
+            DBHelper.getDatabase(context).insert(DBHelper.TABLE_USERS, null, contentValues);
+        }
+    }
 }

@@ -12,6 +12,9 @@ import android.view.ViewGroup;
 import org.bogdan.remindme.R;
 import org.bogdan.remindme.content.UserVK;
 import org.bogdan.remindme.adapter.UserListAdapter;
+import org.bogdan.remindme.database.DBHelper;
+
+import java.util.Collections;
 
 /**
  * Created by Bodia on 28.10.2016.
@@ -41,8 +44,12 @@ public class BirhtdayFragment extends AbstractTabFragment{
         RecyclerView recyclerView;
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
-        recyclerView.setAdapter(new UserListAdapter(UserVK.getUsersList()));
 
+        if(DBHelper.readUserVKTable(getContext(), UserVK.getUsersList())) {
+            Collections.sort(UserVK.getUsersList());
+            recyclerView.setAdapter(new UserListAdapter(UserVK.getUsersList()));
+            DBHelper.closeDB();
+        }
         return view;
     }
 

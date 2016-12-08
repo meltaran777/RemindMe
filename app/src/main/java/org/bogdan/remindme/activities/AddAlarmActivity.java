@@ -3,6 +3,7 @@ package org.bogdan.remindme.activities;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
@@ -12,23 +13,26 @@ import android.support.v7.widget.SwitchCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
 import org.bogdan.remindme.R;
 import org.bogdan.remindme.content.AlarmClock;
+import org.bogdan.remindme.fragment.AlarmClockFragment;
 import org.joda.time.LocalTime;
 
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.List;
 
 public class AddAlarmActivity extends AppCompatActivity implements View.OnClickListener {
 private final static int SOUND_PICKER_RESULT_CODE = 1;
     private EditText editText;
+    private TextView dayView;
+    private TextView soundView;
     private Button btnRepeat;
     private Button btnCancel;
     private Button btnOK;
+    private Button btnSound;
     private SwitchCompat switchCompat;
     private TimePicker timePicker;
 
@@ -43,16 +47,24 @@ private final static int SOUND_PICKER_RESULT_CODE = 1;
             false //San
     };
     int alarmId=-1;
+    String ringtoneURI;
+    String ringtoneTitle;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(R.style.AppDefault);
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_add_alarm);
 
+        ringtoneURI = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString();
+        ringtoneTitle = RingtoneManager.getRingtone(this,Uri.parse(ringtoneURI)).getTitle(this);
+
         editText = (EditText) findViewById(R.id.textViewDescription);
+        dayView = (TextView) findViewById(R.id.textRepeatDays);
+        soundView = (TextView) findViewById(R.id.textSound);
         btnRepeat = (Button) findViewById(R.id.btn_repeat);
         btnCancel = (Button) findViewById(R.id.btn_cancel);
         btnOK = (Button) findViewById(R.id.btn_ok);
+        btnSound = (Button) findViewById(R.id.btn_sound);
         switchCompat = (SwitchCompat) findViewById(R.id.switch_on_off);
         timePicker = (TimePicker) findViewById(R.id.timePickerAddAlarm);
 
@@ -60,12 +72,18 @@ private final static int SOUND_PICKER_RESULT_CODE = 1;
         timePicker.setIs24HourView(true);
         timePicker.setCurrentHour(localTime.getHourOfDay());
 
+
+
         btnRepeat.setOnClickListener(this);
         btnCancel.setOnClickListener(this);
         btnOK.setOnClickListener(this);
+        btnSound.setOnClickListener(this);
 
         Intent intent = getIntent();
         if (intent != null) {
+            if(intent.getAction().equalsIgnoreCase(AlarmClockFragment.CREATE_ALARM_ACTION)) switchCompat.setEnabled(false);
+            else switchCompat.setEnabled(true);
+
             alarmId = intent.getIntExtra("alarmID", -1);
             boolean active = intent.getBooleanExtra("alarmActive",false);
             if (alarmId >= 0) {
@@ -76,11 +94,10 @@ private final static int SOUND_PICKER_RESULT_CODE = 1;
                 timePicker.setCurrentMinute(AlarmClock.getAlarmList().get(alarmId).getMinute());
                 checkedDay = AlarmClock.getAlarmList().get(alarmId).getAlarmDays();
                 ringtoneURI = AlarmClock.getAlarmList().get(alarmId).getRingtoneURI();
-                btnRepeatSetText();
             }
+            textViewSetText();
         }
     }
-    String ringtoneURI = null;
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -92,6 +109,7 @@ private final static int SOUND_PICKER_RESULT_CODE = 1;
             }
             else ringtoneURI = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString();
         }
+        textViewSetText();
     }
     @Override
     public void onClick(View v) {
@@ -149,7 +167,7 @@ private final static int SOUND_PICKER_RESULT_CODE = 1;
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        btnRepeatSetText();
+                        textViewSetText();
                         dialog.dismiss();
                     }
                 });
@@ -174,31 +192,37 @@ private final static int SOUND_PICKER_RESULT_CODE = 1;
 
     }
 
-    private void btnRepeatSetText(){
-        btnRepeat.setText("");
+    private void textViewSetText(){
+        ringtoneTitle = RingtoneManager.getRingtone(this,Uri.parse(ringtoneURI)).getTitle(this);
+        int substringSize;
+        if (ringtoneTitle.length() <= 16) substringSize = ringtoneTitle.length()-1;
+        else substringSize = 16;
+        soundView.setHint(ringtoneTitle.substring(0, substringSize));
+
+        dayView.setHint("");
         for(int i=0;i<checkedDay.length;i++){
             boolean day=checkedDay[i];
             if(day == true) switch (i){
                 case 0:
-                    btnRepeat.setText(btnRepeat.getText()+"Mn ");
+                    dayView.setHint(dayView.getHint()+"Mn ");
                     break;
                 case 1:
-                    btnRepeat.setText(btnRepeat.getText()+"Ts ");
+                    dayView.setHint(dayView.getHint()+"Ts ");
                     break;
                 case 2:
-                    btnRepeat.setText(btnRepeat.getText()+"Wd ");
+                    dayView.setHint(dayView.getHint()+"Wd ");
                     break;
                 case 3:
-                    btnRepeat.setText(btnRepeat.getText()+"Th ");
+                    dayView.setHint(dayView.getHint()+"Th ");
                     break;
                 case 4:
-                    btnRepeat.setText(btnRepeat.getText()+"Fr ");
+                    dayView.setHint(dayView.getHint()+"Fr ");
                     break;
                 case 5:
-                    btnRepeat.setText(btnRepeat.getText()+"St ");
+                    dayView.setHint(dayView.getHint()+"St ");
                     break;
                 case 6:
-                    btnRepeat.setText(btnRepeat.getText()+"Sn");
+                    dayView.setHint(dayView.getHint()+"Sn");
                     break;
             }
         }

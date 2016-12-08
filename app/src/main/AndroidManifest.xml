@@ -24,7 +24,6 @@
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="org.bogdan.remindme.NotificationPublisher" />
             </intent-filter>
         </receiver>
 
@@ -36,14 +35,20 @@
             <action android:name="com.htc.intent.action.QUICKBOOT_POWERON"/>
             <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
             <action android:name="android.intent.action.BOOT_COMPLETED" />
+            <action android:name="org.bogdan.remindme.ALARMDIALOG_DELAY" />
+            <action android:name="org.bogdan.remindme.CREATE_ALARM" />
             <category android:name="android.intent.category.DEFAULT" />
             <!---->
         </intent-filter>
         </receiver>
 
         <service
-            android:name=".util.RingtoneServices"
-            android:enabled="true" />
+            android:name=".util.NotificationActionService"
+            android:enabled="true" >
+            <intent-filter>
+                <action android:name="org.bogdan.remindme.DISPLAY_NOTIFICATION" />
+            </intent-filter>
+        </service>
 
         <activity android:name=".activities.MainActivity">
             <intent-filter>
@@ -59,13 +64,14 @@
             android:excludeFromRecents="true"
             android:taskAffinity=""
             android:showOnLockScreen="true"
-            android:theme="@style/Theme.AppCompat.Dialog" />
+            android:theme="@style/DialogMin" />
 
         <activity
             android:name=".activities.SettingsActivity"
             android:label="@string/title_activity_settings" />
 
-        <activity android:name=".activities.AddAlarmActivity"></activity>
+        <activity android:name=".activities.AddAlarmActivity"
+            android:theme="@style/DialogLarge"></activity>
 
     </application>
 
