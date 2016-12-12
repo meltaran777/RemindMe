@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -19,11 +21,25 @@ import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import net.danlew.android.joda.JodaTimeAndroid;
 
 import org.bogdan.remindme.R;
 import org.bogdan.remindme.activities.AddAlarmActivity;
 import org.bogdan.remindme.content.AlarmClock;
 import org.bogdan.remindme.database.DBHelper;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
+import org.joda.time.LocalTime;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+import java.util.List;
 
 /**
  * Created by Bodia on 28.10.2016.
@@ -115,20 +131,22 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
             }
 
             ContentValues contentValues = new ContentValues();
-            DBHelper.putAlarmValue(getContext(), contentValues, descString, ringtoneURI , active, daysArray, hour, minute);
-            //DBHelper.putAlarmValue(getContext(), contentValues, alarmClock);
+            //DBHelper.putAlarmValue(getContext(), contentValues, descString, ringtoneURI , active, daysArray, hour, minute);
+            DBHelper.putAlarmValue(getContext(), contentValues, alarmClock);
             if (alarmId >= 0){
                 //update record in DB
                 int alarmIdDB = alarmId+1;
                 String strAlarmIdDb = String.valueOf(alarmIdDB);
-                DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM + "=?", new String[] {strAlarmIdDb} );
-                //DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[] {strAlarmIdDb} );
+                //DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM + "=?", new String[] {strAlarmIdDb} );
+                DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[] {strAlarmIdDb} );
             }else{
                 //Add record to DB
                 DBHelper.getDatabase(getContext()).insert(DBHelper.TABLE_ALARMS, null, contentValues);
             }
-
+            //List<AlarmClock> testList = new ArrayList<>();
+            //DBHelper.readTableAlarms(getContext(), testList);
             AlarmClock.createAlarm(getContext(), getAlarmMgr(), AlarmClock.getAlarmList(), false);
+            if (alarmClock.isActive()) showAlarmTimeToast(alarmClock);
         }
         /*
         if (resultCode == Activity.RESULT_CANCELED){
@@ -139,6 +157,33 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
         */
         AlarmClock.getAlarmArrayMap(); //update data that set to adapter
         adapter.notifyDataSetChanged();
+    }
+
+    private void showAlarmTimeToast(AlarmClock clock) {
+        long diff = clock.getAlarmDiffInMillis();
+        LocalDateTime localAlarmTime = new LocalDateTime(diff, DateTimeZone.UTC);
+
+        LocalDateTime alarmTime = new LocalDateTime(clock.getAlarmTimeInMillis(), DateTimeZone.UTC);
+        LocalDateTime now = new LocalDateTime(DateTimeZone.UTC);
+        Duration duration = new Duration(now.toDateTime(DateTimeZone.UTC), alarmTime.toDateTime(DateTimeZone.UTC));
+
+        String toastString = getContext().getString(R.string.toast_text1);
+        if (duration.getStandardDays() > 0){
+            toastString += " "+duration.getStandardDays();
+            toastString += " "+getContext().getString(R.string.toast_text_day)+" ";
+        }
+        if( localAlarmTime.getHourOfDay() > 0) {
+            toastString += +localAlarmTime.getHourOfDay();
+            toastString += " "+getContext().getString(R.string.toast_text_hour)+" ";
+        }
+        if( localAlarmTime.getMinuteOfHour() > 0) {
+            toastString += localAlarmTime.getMinuteOfHour();
+            toastString += " "+getContext().getString(R.string.toast_text_minute)+" ";
+        }
+        if (localAlarmTime.getHourOfDay() < 0 && localAlarmTime.getMinuteOfHour() < 0) toastString += getContext().getString(R.string.toast_text_less_minute);
+        toastString += getContext().getString(R.string.toast_text2);
+
+        Toast.makeText(getContext(), toastString, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -173,34 +218,30 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         super.onCreateContextMenu(menu, v, menuInfo);
-        menu.add(0,0,0,"Delete");
+        menu.add(0,0,0,getContext().getString(R.string.delete));
     }
 
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         if (item.getItemId() == 0) {
-            for (int i=0; i<AlarmClock.getAlarmList().size(); i++) {
-                ContentValues contentValues = new ContentValues();
-                contentValues.put(DBHelper.KEY_ID_ALARM_UPDATE, i);
-                DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, null, null);
-            }
-
             AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
             int alarmIdDB = acmi.position+1;
             String strAlarmIdDb = String.valueOf(alarmIdDB);
-            DBHelper.getDatabase(getContext()).delete(DBHelper.TABLE_ALARMS, DBHelper.KEY_ID_ALARM + "=?", new String[] {strAlarmIdDb} );
-            //DBHelper.getDatabase(getContext()).delete(DBHelper.TABLE_ALARMS, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[] {strAlarmIdDb} );
+            //DBHelper.getDatabase(getContext()).delete(DBHelper.TABLE_ALARMS, DBHelper.KEY_ID_ALARM + "=?", new String[] {strAlarmIdDb} );
+            DBHelper.getDatabase(getContext()).delete(DBHelper.TABLE_ALARMS, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[] {strAlarmIdDb} );
 
             AlarmClock.getAlarmList().remove(acmi.position);
             AlarmClock.recreateAlarmListId();
             AlarmClock.getAlarmArrayMap();
             adapter.notifyDataSetChanged();
 
-            for (int i=0; i<AlarmClock.getAlarmList().size(); i++) {
+            for (int i=alarmIdDB; i<=AlarmClock.getAlarmList().size(); i++) {
                 ContentValues contentValues = new ContentValues();
                 contentValues.put(DBHelper.KEY_ID_ALARM_UPDATE, i);
-                DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, null, null);
+                String idDb = String.valueOf(i+1);
+                DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[] {idDb} );
             }
+            AlarmClock.createAlarm(getContext(), getAlarmMgr(),AlarmClock.getAlarmList(), false);
             return true;
         }
         return super.onContextItemSelected(item);
@@ -254,37 +295,37 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
                 case R.id.textMn:
                     alarmDays = (boolean[]) data;
                     ((TextView) view).setText("");
-                    if(alarmDays[0])((TextView) view).setText("Mn");
+                    if(alarmDays[0])((TextView) view).setText(getContext().getString(R.string.mn));
                    return true;
                 case R.id.textTs:
                     alarmDays = (boolean[]) data;
                     ((TextView) view).setText("");
-                    if(alarmDays[1])((TextView) view).setText("Ts");
+                    if(alarmDays[1])((TextView) view).setText(getContext().getString(R.string.ts));
                     return true;
                 case R.id.textWd:
                     alarmDays = (boolean[]) data;
                     ((TextView) view).setText("");
-                    if(alarmDays[2])((TextView) view).setText("Wd");
+                    if(alarmDays[2])((TextView) view).setText(getContext().getString(R.string.wd));
                     return true;
                 case R.id.textTh:
                     alarmDays = (boolean[]) data;
                     ((TextView) view).setText("");
-                    if(alarmDays[3])((TextView) view).setText("Th");
+                    if(alarmDays[3])((TextView) view).setText(getContext().getString(R.string.th));
                     return true;
                 case R.id.textFr:
                     alarmDays = (boolean[]) data;
                     ((TextView) view).setText("");
-                    if(alarmDays[4])((TextView) view).setText("Fr");
+                    if(alarmDays[4])((TextView) view).setText(getContext().getString(R.string.fr));
                     return true;
                 case R.id.textSt:
                     alarmDays = (boolean[]) data;
                     ((TextView) view).setText("");
-                    if(alarmDays[5])((TextView) view).setText("St");
+                    if(alarmDays[5])((TextView) view).setText(getContext().getString(R.string.st));
                     return true;
                 case R.id.textSn:
                     alarmDays = (boolean[]) data;
                     ((TextView) view).setText("");
-                    if(alarmDays[6])((TextView) view).setText("Sn");
+                    if(alarmDays[6])((TextView) view).setText(getContext().getString(R.string.sn));
                     return true;
                 case R.id.textDescription:
                     description = data.toString();
@@ -305,16 +346,21 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
             int position = (int) buttonView.getTag();
 
             AlarmClock alarmClock = AlarmClock.getAlarmList().get(position);
+            alarmClock.setActive(isChecked);//Update id
+
             ContentValues contentValues = new ContentValues();
-            DBHelper.putAlarmValue(getContext(), contentValues, alarmClock.getDescription(), alarmClock.getRingtoneURI(), isChecked, alarmClock.getAlarmDays(), alarmClock.getHour(), alarmClock.getMinute());
-            //DBHelper.putAlarmValue(getContext(), contentValues, alarmClock);
+            //DBHelper.putAlarmValue(getContext(), contentValues, alarmClock.getDescription(), alarmClock.getRingtoneURI(), isChecked, alarmClock.getAlarmDays(), alarmClock.getHour(), alarmClock.getMinute());
+            DBHelper.putAlarmValue(getContext(), contentValues, alarmClock);
             int alarmIdDB = alarmClock.getAlarmId() + 1;
             String strAlarmIdDb = String.valueOf(alarmIdDB);
-            DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM + "=?", new String[] {strAlarmIdDb} );
-            //DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[] {strAlarmIdDb} );
+            //DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM + "=?", new String[] {strAlarmIdDb} );
+            DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[] {strAlarmIdDb} );
 
             AlarmClock.getAlarmList().get(position).setActive(isChecked);
             AlarmClock.getAlarmArrayMap(); //update data that set to adapter
+            AlarmClock.createAlarm(getContext(), getAlarmMgr(),AlarmClock.getAlarmList(), false);
+
+            if (alarmClock.isActive()) showAlarmTimeToast(alarmClock);
             //Toast.makeText(getContext(), String.valueOf(position), Toast.LENGTH_SHORT).show();
         }
     }

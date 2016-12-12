@@ -47,11 +47,10 @@ import java.util.List;
 /**
  * Created by Bodia on 09.06.2016.
  */
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity {
     private static final int TAB_ONE=0;
     private static final int TAB_TWO=1;
     private static final int TAB_THREE=2;
-    private static final int TAB_FOUR=3;
     public static final String APP_TAG = "RemindMe" ;
 
     private Toolbar toolbar;
@@ -73,8 +72,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         vkLogin();
         initToolbar();
-        initNavigationView();
         initTabs();
+        initNavigationView();
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -126,37 +125,46 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toggle.syncState();
 
         navigationView = (NavigationView) findViewById(R.id.navigation);
-        navigationView.setNavigationItemSelectedListener(this);
+        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(MenuItem item) {
+                Log.i("navigationView"," onItemSelected");
+                drawerLayout.closeDrawers();
+                switch (item.getItemId()){
+                    case R.id.menu_item_alarm_clock:
+                        showNotificationTab(TAB_THREE);
+                        break;
+                    case R.id.menu_item_birthday:
+                        showNotificationTab(TAB_ONE);
+                        break;
+                    case R.id.menu_item_calendar:
+                        showNotificationTab(TAB_TWO);
+                        break;
+                    case R.id.menu_item_settings:
+                        Intent settingsIntent = new Intent(getApplicationContext(),SettingsActivity.class);
+                        startActivity(settingsIntent);
+                        break;
+                }
+                return true;
+            }
+        });
     }
 
 
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        Log.i("navigationView"," onItemSelected");
-        drawerLayout.closeDrawers();
-        switch (item.getItemId()){
-            case R.id.menu_item_notification:
-                Log.i("navigationView"," case");
-                showNotificationTab();
-                break;
-        }
-        return true;
-    }
 
 
-    private void showNotificationTab(){
-        viewPager.setCurrentItem(TAB_TWO);
+
+    private void showNotificationTab(int tab){
+        viewPager.setCurrentItem(tab);
     }
 
     private String[] vkScope = new String[]{VKScope.MESSAGES,VKScope.FRIENDS,VKScope.WALL};
-
     private void vkLogin() {
         //String[] fingetprints = VKUtil.getCertificateFingerprint(this,this.getPackageName());     get VK fingerprint
         if(!VKSdk.isLoggedIn()) VKSdk.login(this,vkScope);
     }
 
     private VKRequest getVKFriendsList = VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
-
     private void vkRequestExecute(VKRequest currentRequest){
         Log.d("VkAppDP", "vkRequestExecute ");
 

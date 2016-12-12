@@ -9,7 +9,8 @@
     <string name="str_help">Help</string>
     <string name="str_notification">Notification</string>
     <string name="str_birthday">Today Birhtday</string>
-    <string name="str_birthday_soon">Soon Birhtday(3day)</string>
+    <string name="str_birthday_menu">Birhtday</string>
+    <string name="str_birthday_soon">Birhtday Soon(3day)</string>
     <string name="str_checkbox_text">Notify earlier(3day)</string>
 
     <string name="view_navigation_open">Open</string>
@@ -94,5 +95,24 @@
     <string name="pref_ringtone_silent">Silent</string>
 
     <string name="pref_title_vibrate">Vibrate</string>
+    <string name="str_calendar">Calendar</string>
+    <string name="str_alarm_clock">Alarm Clock</string>
+    <string name="str_birthday_text">birthday:</string>
+    <string name="str_next_birth">next birht:</string>
+    <string name="birthday_big">Birthday:</string>
+    <string name="toast_text1">Signal set on </string>
+    <string name="toast_text_day"> Day </string>
+    <string name="toast_text_hour"> Hour </string>
+    <string name="toast_text_minute"> Minute </string>
+    <string name="toast_text2">from current time</string>
+    <string name="toast_text_less_minute">less minute</string>
+    <string name="mn">Mn</string>
+    <string name="ts">Ts</string>
+    <string name="wd">Wd</string>
+    <string name="th">Th</string>
+    <string name="fr">Fr</string>
+    <string name="st">St</string>
+    <string name="sn">Sn</string>
+    <string name="delete">Delete</string>
 
 </resources>

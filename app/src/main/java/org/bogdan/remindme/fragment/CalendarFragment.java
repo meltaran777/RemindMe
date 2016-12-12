@@ -93,7 +93,7 @@ public class CalendarFragment extends AbstractTabFragment{
 
                         AlertDialog.Builder builder =
                                 new AlertDialog.Builder(view.getContext())
-                                        .setMessage("Birthday: "+userVK.getName())
+                                        .setMessage(getContext().getString(R.string.birthday_big)+userVK.getName())
                                         .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {

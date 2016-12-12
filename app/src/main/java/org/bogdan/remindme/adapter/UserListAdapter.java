@@ -52,21 +52,21 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
 
         if(!data.isEmpty()) {
             if(data.get(position).getAvatarURL()!=null){
-                //new DownloadImageTask(holder.imageView).execute(data.get(position).getAvatarURL());
                 Picasso.with(view.getContext()).load(data.get(position).getAvatarURL()).resize(IMG_WIDTH, IMG_HIGH).into(holder.imageView);
             }
 
             if(data.get(position).getDateFormat()!=null){
                 DateTimeFormatter dateTimeFormat = DateTimeFormat.forPattern(data.get(position).getDateFormat());
-                holder.title.setText(data.get(position).getName()+"\n"+"birht date: "+data.get(position).getBirthDate().toString(dateTimeFormat)+
-                        "\n"+"next birht: "+UserVK.getTimeToNextBirht(data.get(position)));
+                holder.tvName.setText(data.get(position).getName());
+                holder.tvBdate.setText(view.getContext().getString(R.string.str_birthday_text)+data.get(position).getBirthDate().toString(dateTimeFormat));
+                holder.tvTimeToBdate.setText(view.getContext().getString(R.string.str_next_birth)+UserVK.getTimeToNextBirht(data.get(position)));
             }
 
             holder.checkBoxVIP.setChecked(data.get(position).isNotify());
             holder.checkBoxVIP.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                    //Create notification if
+
                     if ((data.get(position).getDayToNextBirht() -  data.get(0).getDayToNextBirht()) < 3){
                         NotificationPublisher.scheduleNotification(view.getContext(),0,data.get(position));
                     }
@@ -94,7 +94,9 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
 
     public static class RemindViewHollder extends RecyclerView.ViewHolder{
         CardView cardView;
-        TextView title;
+        TextView tvName;
+        TextView tvBdate;
+        TextView tvTimeToBdate;
         ImageView imageView;
         CheckBox checkBoxVIP;
 
@@ -102,7 +104,9 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
             super(itemView);
 
             cardView = (CardView) itemView.findViewById(R.id.CardView);
-            title = (TextView) itemView.findViewById(R.id.TextViewTitle);
+            tvName = (TextView) itemView.findViewById(R.id.tvName);
+            tvBdate = (TextView) itemView.findViewById(R.id.tvBdate);
+            tvTimeToBdate = (TextView) itemView.findViewById(R.id.tvTimeToBdate);
             imageView = (ImageView) itemView.findViewById(R.id.imageViewAvatarVK);
             checkBoxVIP = (CheckBox) itemView.findViewById(R.id.checkboxVIP);
         }

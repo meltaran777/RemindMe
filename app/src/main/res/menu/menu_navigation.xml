@@ -4,9 +4,24 @@
     <group android:checkableBehavior="single">
 
         <item android:orderInCategory="1"
-            android:title="@string/str_notification"
-            android:id="@+id/menu_item_notification"
-            android:icon="@drawable/ic_notification"/>
+            android:title="@string/str_alarm_clock"
+            android:id="@+id/menu_item_alarm_clock"
+            android:icon="@drawable/ic_alarm"/>
+
+        <item android:orderInCategory="1"
+            android:title="@string/str_birthday_menu"
+            android:id="@+id/menu_item_birthday"
+            android:icon="@drawable/ic_birthday"/>
+
+        <item android:orderInCategory="1"
+            android:title="@string/str_calendar"
+            android:id="@+id/menu_item_calendar"
+            android:icon="@drawable/ic_calendar"/>
+
+        <item android:orderInCategory="1"
+            android:title="@string/str_settings"
+            android:id="@+id/menu_item_settings"
+            android:icon="@drawable/ic_settings"/>
 
     </group>
 

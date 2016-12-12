@@ -142,7 +142,7 @@ private final static int SOUND_PICKER_RESULT_CODE = 1;
             case R.id.btn_repeat:
                 AlertDialog.Builder builder = new AlertDialog.Builder(AddAlarmActivity.this);
                 builder.setIcon(R.drawable.ic_inf);
-                builder.setTitle("Select Day of Week");
+                builder.setTitle("Repeat");
                 builder.setCancelable(false);
                  String[] day = new String[]{
                         "Monday",
