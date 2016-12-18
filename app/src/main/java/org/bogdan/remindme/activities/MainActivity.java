@@ -41,8 +41,15 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+
+import rx.Observable;
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.functions.Action1;
+import rx.functions.Func1;
 
 /**
  * Created by Bodia on 09.06.2016.
@@ -52,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int TAB_TWO=1;
     private static final int TAB_THREE=2;
     public static final String APP_TAG = "RemindMe" ;
+    private static final String STUDY_RX_TAG = "StudyRx";
 
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
@@ -70,38 +78,50 @@ public class MainActivity extends AppCompatActivity {
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
 
-        vkLogin();
+        //vkLogin();
         initToolbar();
         initTabs();
         initNavigationView();
     }
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
-            @Override
-            public void onResult(VKAccessToken res) {
-                if(!DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList())) {
-                    vkRequestExecute(getVKFriendsList);
-                }
-            }
-
-            @Override
-            public void onError(VKError error) {
-
-            }
-        }))
-            super.onActivityResult(requestCode, resultCode, data);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //studyRx();
     }
 
-    private void initTabs() {
-        Log.d("VkAppDP", "initTabs ");
-        viewPager =(ViewPager) findViewById(R.id.ViewPager);
-        tabLayout =(TabLayout) findViewById(R.id.TabLayout);
+    private void studyRx() {
+        Observable.just("Hello World")
+                .map(new Func1<String, String>() {
+                    @Override
+                    public String call(String s) {
+                        return s + " -Dan";
+                    }
+                })
+                .subscribe(new Action1<String>() {
+                    @Override
+                    public void call(String s) {
+                        Log.d(STUDY_RX_TAG, "call: "+s);
+                    }
+                });
 
-        TabsFragmentAdapter adapter = new TabsFragmentAdapter(this,getSupportFragmentManager());
-        viewPager.setAdapter(adapter);
-        tabLayout.setupWithViewPager(viewPager);
+        Observable.just("Hello World")
+                .flatMap(new Func1<String, Observable<String>>() {
+                    @Override
+                    public Observable<String> call(String s) {
+                        List<String> urls = new ArrayList<String>();
+                        urls.add(s);
+                        return Observable.from(urls);
+                    }
+                })
+                .subscribe(new Action1<String>() {
+                    @Override
+                    public void call(String url) {
+                        Log.d(STUDY_RX_TAG, "call: "+url);
+                    }
+                });
     }
+
     private void initToolbar() {
         toolbar=(Toolbar) findViewById(R.id.Toolbar);
         toolbar.setTitle(R.string.app_name);
@@ -116,6 +136,25 @@ public class MainActivity extends AppCompatActivity {
         toolbar.inflateMenu(R.menu.menu);
     }
 
+    @Override
+    protected void onDestroy() {
+        DBHelper.closeDB();
+        super.onDestroy();
+    }
+
+    private void initTabs() {
+        Log.d("VkAppDP", "initTabs ");
+        viewPager =(ViewPager) findViewById(R.id.ViewPager);
+        tabLayout =(TabLayout) findViewById(R.id.TabLayout);
+
+        TabsFragmentAdapter adapter = new TabsFragmentAdapter(this,getSupportFragmentManager());
+        viewPager.setAdapter(adapter);
+        tabLayout.setupWithViewPager(viewPager);
+    }
+
+    private void showNotificationTab(int tab){
+        viewPager.setCurrentItem(tab);
+    }
 
     private void initNavigationView(){
         drawerLayout=(DrawerLayout) findViewById(R.id.DrawerLayout);
@@ -132,13 +171,13 @@ public class MainActivity extends AppCompatActivity {
                 drawerLayout.closeDrawers();
                 switch (item.getItemId()){
                     case R.id.menu_item_alarm_clock:
-                        showNotificationTab(TAB_THREE);
-                        break;
-                    case R.id.menu_item_birthday:
                         showNotificationTab(TAB_ONE);
                         break;
-                    case R.id.menu_item_calendar:
+                    case R.id.menu_item_birthday:
                         showNotificationTab(TAB_TWO);
+                        break;
+                    case R.id.menu_item_calendar:
+                        showNotificationTab(TAB_THREE);
                         break;
                     case R.id.menu_item_settings:
                         Intent settingsIntent = new Intent(getApplicationContext(),SettingsActivity.class);
@@ -149,27 +188,33 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    /*
+    private VKRequest getVKFriendsList = VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
+            @Override
+            public void onResult(VKAccessToken res) {
+                if(!DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList())) {
+                    vkRequestExecute(getVKFriendsList);
+                }
+            }
 
+            @Override
+            public void onError(VKError error) {
 
-
-
-
-    private void showNotificationTab(int tab){
-        viewPager.setCurrentItem(tab);
+            }
+        }))
+            super.onActivityResult(requestCode, resultCode, data);
     }
-
+    */
+    /*
     private String[] vkScope = new String[]{VKScope.MESSAGES,VKScope.FRIENDS,VKScope.WALL};
     private void vkLogin() {
         //String[] fingetprints = VKUtil.getCertificateFingerprint(this,this.getPackageName());     get VK fingerprint
         if(!VKSdk.isLoggedIn()) VKSdk.login(this,vkScope);
     }
 
-    private VKRequest getVKFriendsList = VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
     private void vkRequestExecute(VKRequest currentRequest){
-        Log.d("VkAppDP", "vkRequestExecute ");
-
-        //progressBar.setVisibility(ProgressBar.VISIBLE);
-
         currentRequest.executeWithListener(new VKRequest.VKRequestListener() {
             @Override
             public void onComplete(VKResponse response) {
@@ -204,10 +249,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Collections.sort(UserVK.getUsersList());
                 DBHelper.insertTableUserVKValue(getApplicationContext());
-                DBHelper.closeDB();
                 createNotification();
-                //progressBar.setVisibility(ProgressBar.INVISIBLE);
-                //initTabs();
             }
 
             @Override
@@ -259,4 +301,5 @@ public class MainActivity extends AppCompatActivity {
             DBHelper.getDatabase(context).insert(DBHelper.TABLE_USERS, null, contentValues);
         }
     }
+    */
 }

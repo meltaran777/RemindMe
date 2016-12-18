@@ -114,5 +114,17 @@
     <string name="st">St</string>
     <string name="sn">Sn</string>
     <string name="delete">Delete</string>
+    <string name="toast_text3">Set aside 10 minutes</string>
+    <string name="today">Today</string>
+    <string name="on_off">On/Off</string>
+    <string name="description">Description</string>
+    <string name="repeat">Repeat</string>
+    <string name="days">Days</string>
+    <string name="sound">Sound</string>
+    <string name="cancel">Cancel</string>
+    <string name="set_aside">Set Aside</string>
+    <string name="close">Close</string>
+    <string name="tv_text">TextView</string>
+    <string name="time">Time</string>
 
 </resources>

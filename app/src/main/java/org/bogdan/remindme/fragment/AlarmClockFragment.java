@@ -118,7 +118,6 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
         String ringtoneURI = data.getStringExtra("ringtone");
 
         if (resultCode == Activity.RESULT_OK) {
-
             AlarmClock alarmClock = new AlarmClock(daysArray, hour, minute, descString, active, ringtoneURI, AlarmClock.getAlarmList());
             if (active) {
                 if (alarmId >= 0) {   //alarmId>0 alarm exist-update,alarmId<0 there is no such alarm-add
@@ -143,47 +142,11 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
                 //Add record to DB
                 DBHelper.getDatabase(getContext()).insert(DBHelper.TABLE_ALARMS, null, contentValues);
             }
-            //List<AlarmClock> testList = new ArrayList<>();
-            //DBHelper.readTableAlarms(getContext(), testList);
             AlarmClock.createAlarm(getContext(), getAlarmMgr(), AlarmClock.getAlarmList(), false);
             if (alarmClock.isActive()) showAlarmTimeToast(alarmClock);
         }
-        /*
-        if (resultCode == Activity.RESULT_CANCELED){
-            if (alarmId >= 0) {
-                AlarmClock.getAlarmList().get(alarmId).setActive(false);
-            }
-        }
-        */
         AlarmClock.getAlarmArrayMap(); //update data that set to adapter
         adapter.notifyDataSetChanged();
-    }
-
-    private void showAlarmTimeToast(AlarmClock clock) {
-        long diff = clock.getAlarmDiffInMillis();
-        LocalDateTime localAlarmTime = new LocalDateTime(diff, DateTimeZone.UTC);
-
-        LocalDateTime alarmTime = new LocalDateTime(clock.getAlarmTimeInMillis(), DateTimeZone.UTC);
-        LocalDateTime now = new LocalDateTime(DateTimeZone.UTC);
-        Duration duration = new Duration(now.toDateTime(DateTimeZone.UTC), alarmTime.toDateTime(DateTimeZone.UTC));
-
-        String toastString = getContext().getString(R.string.toast_text1);
-        if (duration.getStandardDays() > 0){
-            toastString += " "+duration.getStandardDays();
-            toastString += " "+getContext().getString(R.string.toast_text_day)+" ";
-        }
-        if( localAlarmTime.getHourOfDay() > 0) {
-            toastString += +localAlarmTime.getHourOfDay();
-            toastString += " "+getContext().getString(R.string.toast_text_hour)+" ";
-        }
-        if( localAlarmTime.getMinuteOfHour() > 0) {
-            toastString += localAlarmTime.getMinuteOfHour();
-            toastString += " "+getContext().getString(R.string.toast_text_minute)+" ";
-        }
-        if (localAlarmTime.getHourOfDay() < 0 && localAlarmTime.getMinuteOfHour() < 0) toastString += getContext().getString(R.string.toast_text_less_minute);
-        toastString += getContext().getString(R.string.toast_text2);
-
-        Toast.makeText(getContext(), toastString, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -245,6 +208,33 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
             return true;
         }
         return super.onContextItemSelected(item);
+    }
+
+    private void showAlarmTimeToast(AlarmClock clock) {
+        long diff = clock.getAlarmDiffInMillis();
+        LocalDateTime localAlarmTime = new LocalDateTime(diff, DateTimeZone.UTC);
+
+        LocalDateTime alarmTime = new LocalDateTime(clock.getAlarmTimeInMillis(), DateTimeZone.UTC);
+        LocalDateTime now = new LocalDateTime(DateTimeZone.UTC);
+        Duration duration = new Duration(now.toDateTime(DateTimeZone.UTC), alarmTime.toDateTime(DateTimeZone.UTC));
+
+        String toastString = getContext().getString(R.string.toast_text1);
+        if (duration.getStandardDays() > 0){
+            toastString += " "+duration.getStandardDays();
+            toastString += " "+getContext().getString(R.string.toast_text_day)+" ";
+        }
+        if( localAlarmTime.getHourOfDay() > 0) {
+            toastString += +localAlarmTime.getHourOfDay();
+            toastString += " "+getContext().getString(R.string.toast_text_hour)+" ";
+        }
+        if( localAlarmTime.getMinuteOfHour() > 0) {
+            toastString += localAlarmTime.getMinuteOfHour();
+            toastString += " "+getContext().getString(R.string.toast_text_minute)+" ";
+        }
+        if (localAlarmTime.getHourOfDay() <= 0 && localAlarmTime.getMinuteOfHour() <= 0) toastString += getContext().getString(R.string.toast_text_less_minute);
+        toastString += getContext().getString(R.string.toast_text2);
+
+        Toast.makeText(getContext(), toastString, Toast.LENGTH_LONG).show();
     }
 
     private void alarmListSetAdapter(){
@@ -361,7 +351,6 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
             AlarmClock.createAlarm(getContext(), getAlarmMgr(),AlarmClock.getAlarmList(), false);
 
             if (alarmClock.isActive()) showAlarmTimeToast(alarmClock);
-            //Toast.makeText(getContext(), String.valueOf(position), Toast.LENGTH_SHORT).show();
         }
     }
 }

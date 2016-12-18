@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.prolificinteractive.materialcalendarview.CalendarDay;
 import com.prolificinteractive.materialcalendarview.DayViewDecorator;
@@ -34,7 +35,6 @@ import java.util.List;
  * Created by Bodia on 28.10.2016.
  */
 public class CalendarFragment extends AbstractTabFragment{
-
     private static final int LAYOUT=R.layout.calendar_fragment_layout;
 
     private static final int IMG_WIDTH = 150;
@@ -42,7 +42,6 @@ public class CalendarFragment extends AbstractTabFragment{
     private static final int DOT_RADIUS = 13;
 
     private static String title;
-
 
     public static CalendarFragment getInstance(Context context){
         Bundle args=new Bundle();
@@ -59,7 +58,6 @@ public class CalendarFragment extends AbstractTabFragment{
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
         view = inflater.inflate(LAYOUT, container, false);
 
         materialCalendarView = (MaterialCalendarView) view.findViewById(R.id.materialCalendarView);
@@ -71,7 +69,6 @@ public class CalendarFragment extends AbstractTabFragment{
     }
 
     private void addOnDateChangedListener() {
-
         materialCalendarView.setOnDateChangedListener(new OnDateSelectedListener() {
             @Override
             public void onDateSelected(@NonNull MaterialCalendarView widget, @NonNull CalendarDay date, boolean selected) {
@@ -81,6 +78,9 @@ public class CalendarFragment extends AbstractTabFragment{
                 int day = date.getDay();
 
                 LocalDate selectedDay = new LocalDate().withDayOfMonth(day).withMonthOfYear(month).withYear(year);
+
+                if (selectedDay.equals(new LocalDate()))
+                    Toast.makeText(getContext(), getContext().getResources().getString(R.string.today), Toast.LENGTH_SHORT).show();
 
                 for(UserVK userVK : UserVK.getUsersList()){
 
@@ -109,9 +109,12 @@ public class CalendarFragment extends AbstractTabFragment{
     }
 
     private void addDecorator() {
-
         List<CalendarDay> calendarDays = new ArrayList<CalendarDay>();
         Calendar calendar = Calendar.getInstance();
+
+        List<CalendarDay> today = new ArrayList<CalendarDay>();
+        CalendarDay todayDay = CalendarDay.from(calendar);
+        today.add(todayDay);
 
         for (UserVK userVK : UserVK.getUsersList()) {
             LocalDate date = UserVK.getNextBirthDate(userVK.getBirthDate());
@@ -125,6 +128,7 @@ public class CalendarFragment extends AbstractTabFragment{
             calendarDays.add(calendarDay);
         }
         materialCalendarView.addDecorators(new EventDecorator(Color.RED, calendarDays));
+        materialCalendarView.addDecorators(new EventDecorator(Color.GREEN, today));
     }
 
     public void setContext(Context context) {

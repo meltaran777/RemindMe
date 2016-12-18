@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.graphics.PixelFormat;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -42,7 +43,7 @@ import java.util.Random;
  * Created by Bodia on 23.11.2016.
  */
 public class AlarmDialogActivity extends AppCompatActivity implements View.OnClickListener {
-    private static final long DELAY = 10000;
+    private static final long DELAY = 10*60*1000;
     public static final String ALARM_DIALOG_ACTION = "org.bogdan.remindme.ALARMDIALOG_DELAY";
 
     TextView timeView;
@@ -93,6 +94,9 @@ public class AlarmDialogActivity extends AppCompatActivity implements View.OnCli
         Uri uri = Uri.parse(ringtone);
         mp = MediaPlayer.create(this,uri);
 
+        AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        am.setStreamVolume(AudioManager.STREAM_MUSIC, am.getStreamMaxVolume(AudioManager.STREAM_MUSIC), 0);
+        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
@@ -132,7 +136,7 @@ public class AlarmDialogActivity extends AppCompatActivity implements View.OnCli
 
                 AlarmClock.createAlarm(getApplicationContext(), alarmMgr, alarmIntent, DELAY, id);
                 NotificationPublisher.displayAlarmNotification(getApplicationContext(), id);
-                Toast.makeText(getApplicationContext(), "Set aside 10 minutes", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), R.string.toast_text3, Toast.LENGTH_LONG).show();
                 finish();
                 break;
         }

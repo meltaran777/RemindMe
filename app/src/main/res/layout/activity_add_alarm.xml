@@ -47,14 +47,14 @@
             android:orientation="vertical">
 
         <android.support.v7.widget.SwitchCompat
-        android:text="On/Off"
+        android:text="@string/on_off"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:checked="true" android:layout_weight="0"
         android:id="@+id/switch_on_off" />
 
         <android.support.v7.widget.AppCompatEditText
-            android:hint="Description"
+            android:hint="@string/description"
             android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
             android:maxLength="16"
             android:layout_width="match_parent"
@@ -72,7 +72,7 @@
 
 
             <android.support.v7.widget.AppCompatButton
-            android:text="Repeat"
+            android:text="@string/repeat"
             android:textAppearance="@style/Base.TextAppearance.AppCompat.Button"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -80,7 +80,7 @@
             android:id="@+id/btn_repeat" />
 
             <android.support.v7.widget.AppCompatTextView
-                android:hint="Days"
+                android:hint="@string/days"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|left"
@@ -96,7 +96,7 @@
             android:layout_weight="1">
 
             <android.support.v7.widget.AppCompatButton
-                android:text="Sound"
+                android:text="@string/sound"
                 android:textAppearance="@style/Base.TextAppearance.AppCompat.Button"
                 android:gravity="left|top"
                 android:layout_width="match_parent"
@@ -104,7 +104,7 @@
                 android:id="@+id/btn_sound" />
 
             <android.support.v7.widget.AppCompatTextView
-                android:hint="Sound"
+                android:hint="@string/sound"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="bottom|left"
@@ -123,7 +123,7 @@
         android:layout_weight="0">
 
             <android.support.v7.widget.AppCompatButton
-                android:text="Cancel"
+                android:text="@string/cancel"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/btn_cancel"

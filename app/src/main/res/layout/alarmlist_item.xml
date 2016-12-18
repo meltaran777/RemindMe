@@ -19,7 +19,7 @@
         android:paddingTop="2dp">
 
     <TextView
-        android:hint="Time"
+        android:hint="@string/time"
         android:textSize="10pt"
         android:textColor="@color/vk_black"
         android:layout_width="match_parent"
@@ -42,7 +42,7 @@
             android:orientation="horizontal"
             android:layout_weight="1">
         <TextView
-            android:hint="Description"
+            android:hint="@string/description"
             android:textColor="@color/Black"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -57,48 +57,48 @@
             android:layout_weight="1">
 
             <TextView
-                android:hint="Mn"
+                android:hint="@string/mn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/textMn"
                 android:textColor="@color/Black" />
             <TextView
-                android:hint="Ts"
+                android:hint="@string/ts"
                 android:paddingLeft="3dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/textTs"
                 android:textColor="@color/Black" />
             <TextView
-                android:hint="Wd"
+                android:hint="@string/wd"
                 android:paddingLeft="3dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/textWd"
                 android:textColor="@color/Black" />
             <TextView
-                android:hint="Th"
+                android:hint="@string/th"
                 android:paddingLeft="3dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/textTh"
                 android:textColor="@color/Black" />
             <TextView
-                android:hint="Fr"
+                android:hint="@string/fr"
                 android:paddingLeft="3dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/textFr"
                 android:textColor="@color/Black" />
             <TextView
-                android:hint="St"
+                android:hint="@string/st"
                 android:paddingLeft="3dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/textSt"
                 android:textColor="@color/Black" />
             <TextView
-                android:hint="Sn"
+                android:hint="@string/sn"
                 android:paddingLeft="3dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

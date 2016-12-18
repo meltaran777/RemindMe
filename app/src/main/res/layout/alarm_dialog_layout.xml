@@ -21,7 +21,7 @@
             android:id="@+id/imageClockDialog" />
 
         <android.support.v7.widget.AppCompatTextView
-            android:text="TextView"
+            android:text="@string/tv_text"
             android:textColor="@color/colorWhite"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -39,7 +39,7 @@
         android:background="@color/colorWhite">
 
         <android.support.v7.widget.AppCompatTextView
-            android:text="TextView"
+            android:text="@string/tv_text"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:textSize="10pt"
@@ -61,7 +61,7 @@
             android:layout_weight="1">
 
             <Button
-                android:text="Set Aside"
+                android:text="@string/set_aside"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/btn_set_aside"
@@ -74,7 +74,7 @@
             android:layout_weight="1" >
 
             <Button
-                android:text="Close"
+                android:text="@string/close"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/btn_close"

@@ -44,8 +44,8 @@ public class TabsFragmentAdapter extends FragmentPagerAdapter {
 
     private void initTabsMap() {
         tabsMap = new HashMap<>();
-        tabsMap.put(0, BirhtdayFragment.getInstance(context));
-        tabsMap.put(1, CalendarFragment.getInstance(context));
-        tabsMap.put(2, AlarmClockFragment.getInstance(context));
+        tabsMap.put(0, AlarmClockFragment.getInstance(context));
+        tabsMap.put(1, BirhtdayFragment.getInstance(context));
+        tabsMap.put(2, CalendarFragment.getInstance(context));
     }
 }
