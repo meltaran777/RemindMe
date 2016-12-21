@@ -291,6 +291,7 @@ public class AlarmClock implements Comparable<AlarmClock> {
                     if (alarmClock.isSingle()){
 
                         AlarmClock alarmClockActive = alarmListActive.get(alarmListActive.size()-1);
+                        alarmClockActive.setActive(false);
 
                         int alarmIdDB = alarmClockActive.getAlarmId()+1;
                         String strAlarmIdDb = String.valueOf(alarmIdDB);

@@ -1,5 +1,6 @@
 package org.bogdan.remindme.activities;
 
+import android.app.Fragment;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -29,6 +30,7 @@ import com.vk.sdk.api.VKRequest;
 import com.vk.sdk.api.VKResponse;
 import com.vk.sdk.api.model.VKApiUserFull;
 import com.vk.sdk.api.model.VKUsersArray;
+import com.vk.sdk.util.VKUtil;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -36,6 +38,7 @@ import org.bogdan.remindme.R;
 import org.bogdan.remindme.content.UserVK;
 import org.bogdan.remindme.adapter.TabsFragmentAdapter;
 import org.bogdan.remindme.database.DBHelper;
+import org.bogdan.remindme.fragment.BirhtdayFragment;
 import org.bogdan.remindme.util.NotificationPublisher;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -66,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private NavigationView navigationView;
-    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,9 +78,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.main_layout);
         JodaTimeAndroid.init(this);
 
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-
-        //vkLogin();
+        vkLogin();
         initToolbar();
         initTabs();
         initNavigationView();
@@ -143,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initTabs() {
-        Log.d("VkAppDP", "initTabs ");
         viewPager =(ViewPager) findViewById(R.id.ViewPager);
         tabLayout =(TabLayout) findViewById(R.id.TabLayout);
 
@@ -167,7 +166,6 @@ public class MainActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
-                Log.i("navigationView"," onItemSelected");
                 drawerLayout.closeDrawers();
                 switch (item.getItemId()){
                     case R.id.menu_item_alarm_clock:
@@ -188,30 +186,27 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    /*
+    private String[] vkScope = new String[]{VKScope.MESSAGES, VKScope.FRIENDS, VKScope.WALL};
+    private void vkLogin() {
+        //String[] fingetprints = VKUtil.getCertificateFingerprint(this,this.getPackageName());
+        if(!DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList())) {
+            VKSdk.login(this, vkScope);
+        }
+    }
     private VKRequest getVKFriendsList = VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
             @Override
             public void onResult(VKAccessToken res) {
-                if(!DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList())) {
-                    vkRequestExecute(getVKFriendsList);
-                }
+                vkRequestExecute(getVKFriendsList);
             }
 
             @Override
             public void onError(VKError error) {
-
+                Log.e("ERROR", "VK init error");
             }
         }))
             super.onActivityResult(requestCode, resultCode, data);
-    }
-    */
-    /*
-    private String[] vkScope = new String[]{VKScope.MESSAGES,VKScope.FRIENDS,VKScope.WALL};
-    private void vkLogin() {
-        //String[] fingetprints = VKUtil.getCertificateFingerprint(this,this.getPackageName());     get VK fingerprint
-        if(!VKSdk.isLoggedIn()) VKSdk.login(this,vkScope);
     }
 
     private void vkRequestExecute(VKRequest currentRequest){
@@ -250,6 +245,9 @@ public class MainActivity extends AppCompatActivity {
                 Collections.sort(UserVK.getUsersList());
                 DBHelper.insertTableUserVKValue(getApplicationContext());
                 createNotification();
+
+                //BirhtdayFragment instanceFragment = (BirhtdayFragment) getSupportFragmentManager().findFragmentById(R.id.birthday_fragment);
+                //instanceFragment.getAdapter().notifyDataSetChanged();
             }
 
             @Override
@@ -271,35 +269,11 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
     private void createNotification(){
         List<UserVK> userVKList=UserVK.getUsersList();
         if(!userVKList.isEmpty()) {
             Log.d("VkAppDP", "createNotification ");
-                long day = userVKList.get(0).getDayToNextBirht();
-                NotificationPublisher.scheduleNotification(getApplicationContext(), 0, userVKList.get(0));
+            NotificationPublisher.scheduleNotification(getApplicationContext(), 0, userVKList.get(0));
         }else Log.d("VkAppDP", "createNotification -- Empty ");
     }
-    private void insertDB(Context context) {
-        ContentValues contentValues = new ContentValues();
-
-        for(UserVK userVK : UserVK.getUsersList()) {
-
-            DateTime birthDate = userVK.getBirthDate();
-            DateTimeFormatter fmt = DateTimeFormat.forPattern(userVK.getDateFormat());
-            String bdate = fmt.print(birthDate);
-
-            int notify;
-            if (userVK.isNotify()) notify = 1; else notify = 0;
-
-            contentValues.put(DBHelper.getDbHelper(context).KEY_NAME, userVK.getName());
-            contentValues.put(DBHelper.getDbHelper(context).KEY_AVATAR_URL, userVK.getAvatarURL());
-            contentValues.put(DBHelper.getDbHelper(context).KEY_BDATE, bdate);
-            contentValues.put(DBHelper.getDbHelper(context).KEY_DATE_FORMAT, userVK.getDateFormat());
-            contentValues.put(DBHelper.getDbHelper(context).KEY_NOTIFY, notify);
-
-            DBHelper.getDatabase(context).insert(DBHelper.TABLE_USERS, null, contentValues);
-        }
-    }
-    */
 }

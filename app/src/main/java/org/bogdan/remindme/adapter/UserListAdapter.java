@@ -35,7 +35,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
 
     private View view;
 
-    private List<UserVK> data=new ArrayList<>();
+    private List<UserVK> data = new ArrayList<>();
 
     public UserListAdapter(List<UserVK> data) {
         this.data = data;
@@ -62,6 +62,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
                 holder.tvTimeToBdate.setText(view.getContext().getString(R.string.str_next_birth)+UserVK.getTimeToNextBirht(data.get(position)));
             }
 
+            holder.checkBoxVIP.setOnCheckedChangeListener(null);
             holder.checkBoxVIP.setChecked(data.get(position).isNotify());
             holder.checkBoxVIP.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
@@ -80,6 +81,8 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
                     DBHelper.getDatabase(view.getContext()).update(DBHelper.TABLE_USERS, contentValues, DBHelper.KEY_ID+ "=?", new String[] {strUserVKIdDB} );
 
                     data.get(position).setNotify(isChecked);
+
+                    Toast.makeText(view.getContext(), data.get(position).getName()+" "+position, Toast.LENGTH_SHORT).show();
                     //Test Notification
                    // NotificationPublisher.scheduleNotification(view.getContext(), 0, position, data.get(position),
                    //         data.get(position).getAvatarURL(), data.get(position).isNotify());

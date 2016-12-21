@@ -1,5 +1,6 @@
 package org.bogdan.remindme.fragment;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ import com.vk.sdk.api.VKRequest;
 import com.vk.sdk.api.VKResponse;
 import com.vk.sdk.api.model.VKApiUserFull;
 import com.vk.sdk.api.model.VKUsersArray;
+import com.vk.sdk.util.VKUtil;
 
 import org.bogdan.remindme.R;
 import org.bogdan.remindme.content.UserVK;
@@ -35,6 +37,7 @@ import org.bogdan.remindme.util.NotificationPublisher;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
+import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.List;
 
@@ -49,6 +52,9 @@ public class BirhtdayFragment extends AbstractTabFragment{
     private UserListAdapter adapter;
 
     private static String title;
+
+
+
     public static BirhtdayFragment getInstance(Context context){
         Bundle args=new Bundle();
         BirhtdayFragment fragment=new BirhtdayFragment();
@@ -58,10 +64,13 @@ public class BirhtdayFragment extends AbstractTabFragment{
 
         return  fragment;
     }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(LAYOUT, container, false);
+
+        //progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
 
         adapter = new UserListAdapter(UserVK.getUsersList());
         recyclerView = (RecyclerView) view.findViewById(R.id.recyclerView);
@@ -80,14 +89,17 @@ public class BirhtdayFragment extends AbstractTabFragment{
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        /*
         if(!DBHelper.readUserVKTable(getContext(), UserVK.getUsersList())) {
             vkLogin();
         }
+        */
     }
     private String[] vkScope = new String[]{VKScope.MESSAGES,VKScope.FRIENDS,VKScope.WALL};
     private void vkLogin() {
-        //String[] fingetprints = VKUtil.getCertificateFingerprint(this,this.getPackageName());     get VK fingerprint
-        VKSdk.login(getActivity(),vkScope);
+        String[] fingetprints = VKUtil.getCertificateFingerprint(getActivity(),getActivity().getPackageName());
+        Log.i("VKFingerprint", "vkLogin: "+ fingetprints);//main_layout get VK fingerprint
+        VKSdk.login(getActivity(), vkScope);
     }
     private VKRequest getVKFriendsList = VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -99,13 +111,12 @@ public class BirhtdayFragment extends AbstractTabFragment{
 
             @Override
             public void onError(VKError error) {
-
+                Log.e("ERROR", "VK init error");
             }
         }))
             super.onActivityResult(requestCode, resultCode, data);
     }
     private void vkRequestExecute(VKRequest currentRequest){
-        //progressBar = (ProgressBar) view.findViewById(R.id.progressBar);
         //progressBar.setVisibility(ProgressBar.VISIBLE);
         currentRequest.executeWithListener(new VKRequest.VKRequestListener() {
             @Override
@@ -175,5 +186,8 @@ public class BirhtdayFragment extends AbstractTabFragment{
     }
     public void setContext(Context context) {
         this.context = context;
+    }
+    public UserListAdapter getAdapter() {
+        return adapter;
     }
 }
