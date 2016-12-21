@@ -99,7 +99,7 @@ public class BirhtdayFragment extends AbstractTabFragment{
     private void vkLogin() {
         String[] fingetprints = VKUtil.getCertificateFingerprint(getActivity(),getActivity().getPackageName());
         Log.i("VKFingerprint", "vkLogin: "+ fingetprints);//main_layout get VK fingerprint
-        //VKSdk.login(getActivity(), vkScope);
+        VKSdk.login(getActivity(), vkScope);
     }
     private VKRequest getVKFriendsList = VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
