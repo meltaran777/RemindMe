@@ -17,14 +17,22 @@ import java.util.List;
 public class UserVK implements Comparable<UserVK> {
 
     private final String name;
-
+    private int id;
     private DateTime birthDate;
-
     private final String dateFormat;
     private final String avatarURL;
     private boolean notify;
 
     static private ArrayList<UserVK> users=new ArrayList<>();
+
+    public UserVK(int id,String name, DateTime birthDate, String dateFormat, String avatarURL, boolean notify) {
+        this.id = id;
+        this.name = name;
+        this.birthDate = birthDate;
+        this.dateFormat = dateFormat;
+        this.avatarURL =avatarURL;
+        this.notify = notify;
+    }
 
     public UserVK(String name, DateTime birthDate, String dateFormat, String avatarURL, boolean notify) {
         this.name = name;

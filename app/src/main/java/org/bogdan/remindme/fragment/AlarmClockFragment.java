@@ -219,7 +219,7 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
     }
 
     private void showAlarmTimeToast(AlarmClock clock) {
-        long diff = clock.getAlarmDiffInMillis();
+        long diff = clock.getAlarmTimeInMillis() - GregorianCalendar.getInstance().getTimeInMillis();
         LocalDateTime localAlarmTime = new LocalDateTime(diff, DateTimeZone.UTC);
 
         LocalDateTime alarmTime = new LocalDateTime(clock.getAlarmTimeInMillis(), DateTimeZone.UTC);
@@ -378,7 +378,7 @@ public class AlarmClockFragment extends AbstractTabFragment implements View.OnCl
     private class CreateAlarmTask extends AsyncTask<Void, Void, Boolean> {
         @Override
         protected Boolean doInBackground(Void... params) {
-            return AlarmClock.createAlarm(getContext(), getAlarmMgr(), AlarmClock.getAlarmList(), false);
+            return AlarmClock.createAlarm(getContext(), getAlarmMgr(), AlarmClock.getAlarmList());
         }
     }
 }

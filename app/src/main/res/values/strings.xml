@@ -11,7 +11,7 @@
     <string name="str_birthday">Today Birhtday</string>
     <string name="str_birthday_menu">Birhtday</string>
     <string name="str_birthday_soon">Birhtday Soon(3day)</string>
-    <string name="str_checkbox_text">Notify earlier(3day)</string>
+    <string name="str_checkbox_text">Notify advance(3day)</string>
 
     <string name="view_navigation_open">Open</string>
     <string name="view_navigation_close">Close</string>
@@ -126,5 +126,7 @@
     <string name="close">Close</string>
     <string name="tv_text">TextView</string>
     <string name="time">Time</string>
+    <string name="tv_vk_not_load_text">Please restart app and login VK to see friends birthday list</string>
+    <string name="Selebrate">Happy Birthday</string>
 
 </resources>

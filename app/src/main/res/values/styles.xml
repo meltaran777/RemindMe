@@ -32,6 +32,11 @@
         <item name="windowNoTitle">true</item>
     </style>
 
+    <style name="DialogLargeNoActionBar" parent="Base.Theme.AppCompat.Light.DialogWhenLarge">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
 
     <style name="DialogLarge" parent="Base.Theme.AppCompat.Light.Dialog.FixedSize">
         <item name="android:windowTitleStyle">@style/dialog_title_style</item>
@@ -42,12 +47,8 @@
         <item name="android:padding">10dp</item>
     </style>
 
-
-
     <style name="OverlayBtn" parent="Theme.AppCompat.Light">
     <item name="colorPrimary">@color/colorPrimary</item>
     </style>
-
-
 
 </resources>

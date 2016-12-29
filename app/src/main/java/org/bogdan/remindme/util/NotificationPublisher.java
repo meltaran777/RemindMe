@@ -37,6 +37,7 @@ import org.joda.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import static android.app.Notification.DEFAULT_VIBRATE;
 
@@ -46,6 +47,8 @@ import static android.app.Notification.DEFAULT_VIBRATE;
 
 public class NotificationPublisher extends BroadcastReceiver {
     public static final String DISPLAY_NOTIFICATION_ACTION = "org.bogdan.remindme.DISPLAY_NOTIFICATION";
+    public static final String DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION = "org.bogdan.remindme.HAPPY_BIRTHDAY_DIALOG_SHOW";
+
     public static String NOTIFICATION_ID = "notification_id";
     public static String NOTIFICATION = "notification";
 
@@ -57,6 +60,15 @@ public class NotificationPublisher extends BroadcastReceiver {
     public void onReceive(final Context context, Intent intent) {
         getNotificationPreference(context);
         JodaTimeAndroid.init(context);
+        //Show notification
+        if (!intent.getAction().equalsIgnoreCase("android.intent.action.BOOT_COMPLETED") && show) {
+            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+            Notification notification = intent.getParcelableExtra(NOTIFICATION);
+            int notificationId = intent.getIntExtra(NOTIFICATION_ID, 0);
+            notification.flags |= Notification.FLAG_AUTO_CANCEL;
+            notificationManager.notify(notificationId, notification);
+        }
         //Create next notification
         List<UserVK> userVKList = new ArrayList<>();
         DBHelper.readUserVKTable(context, userVKList);
@@ -65,67 +77,64 @@ public class NotificationPublisher extends BroadcastReceiver {
         List<UserVK> userVKListFull = UserVK.getUserVKListFull(userVKList);
         Collections.sort(userVKListFull);
         UserVK userVK = userVKListFull.get(0);
+        int notifId = new Random().nextInt();
 
-        scheduleNotification(context, 0, userVK);
-        //Show notification
-        if (!intent.getAction().equalsIgnoreCase("android.intent.action.BOOT_COMPLETED") && show) {
-            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
-            Notification notification = intent.getParcelableExtra(NOTIFICATION);
-            int notificationId = intent.getIntExtra(NOTIFICATION_ID, 0);
-            notificationManager.notify(notificationId, notification);
-        }
-
+        scheduleNotification(context, notifId, userVK);
     }
     static Bitmap avatar;
     public static void scheduleNotification(final Context context, int notificationId, UserVK userVK) {
         getNotificationPreference(context);
-            NotificationCompat.Builder builder;
-            long delay = dayToMillis(userVK.getDayToNextBirht());
-            boolean original = userVK.isNotify();
-            String largeIconUrl = userVK.getAvatarURL();
-            Picasso.with(context).load(largeIconUrl).into(new Target() {
-                @Override
-                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-                    setAvatar(bitmap);
-                }
+        NotificationCompat.Builder builder;
+        long delay = dayToMillis(userVK.getDayToNextBirht());
+        boolean original = userVK.isNotify();
+        String largeIconUrl = userVK.getAvatarURL();
+        Picasso.with(context).load(largeIconUrl).into(new Target() {
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                setAvatar(bitmap);
+            }
 
-                @Override
-                public void onBitmapFailed(Drawable errorDrawable) {
-                    setAvatar(context);
-                }
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+                setAvatar(context);
+            }
 
-                @Override
-                public void onPrepareLoad(Drawable placeHolderDrawable) {
-                    setAvatar(context);
-                }
-            });
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {
+                setAvatar(context);
+            }
+        });
 
-            builder = new NotificationCompat.Builder(context)
-                    .setContentText(userVK.getName())
-                    .setAutoCancel(true)
-                    .setSmallIcon(R.drawable.ic_birthday)
-                    .setLargeIcon(avatar)
-                    .setSound(Uri.parse(ringtone));
-            if (vibration) builder.setDefaults(DEFAULT_VIBRATE);
-            if (original) builder.setContentTitle(context.getString(R.string.str_birthday));
-            else builder.setContentTitle(context.getString(R.string.str_birthday_soon));
+        builder = new NotificationCompat.Builder(context)
+                .setContentText(userVK.getName())
+                .setAutoCancel(true)
+                .setSmallIcon(R.drawable.ic_birthday)
+                .setLargeIcon(avatar)
+                .setSound(Uri.parse(ringtone));
+        if (vibration) builder.setDefaults(DEFAULT_VIBRATE);
+        if (original) builder.setContentTitle(context.getString(R.string.str_birthday));
+        else builder.setContentTitle(context.getString(R.string.str_birthday_soon));
 
-            Intent intent = new Intent(context, MainActivity.class);
-            PendingIntent activity = PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-            builder.setContentIntent(activity);
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.setAction(DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION);
+        intent.putExtra("action", DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION);
+        intent.putExtra("userName", userVK.getName());
+        intent.putExtra("userAvatarURL", userVK.getAvatarURL());
+        PendingIntent activity = PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        builder.setContentIntent(activity);
 
-            Notification notification = builder.build();
+        Notification notification = builder.build();
 
-            Intent notificationIntent = new Intent(context, NotificationPublisher.class);
-            notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, notificationId);
-            notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
-            PendingIntent pendingIntent = PendingIntent.getBroadcast(context, notificationId, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+        Intent notificationIntent = new Intent(context, NotificationPublisher.class);
+        notificationIntent.setAction(DISPLAY_NOTIFICATION_ACTION);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, notificationId);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, notificationId, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            long futureInMillis = SystemClock.elapsedRealtime() + delay;
-            AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-            alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
-
+        long futureInMillis = SystemClock.elapsedRealtime() + delay;
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, futureInMillis, pendingIntent);
     }
 
     public static void displayAlarmNotification(Context context, int notificationId) {
@@ -152,7 +161,6 @@ public class NotificationPublisher extends BroadcastReceiver {
                             .setSmallIcon(R.drawable.ic_alarm_notif)
                             .setContentTitle("Alarm(Set aside) " + strTime)
                             .setContentText("Push to cancel alarm")
-                            //.setSound(RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION))
                             .setSound(Uri.parse(ringtone))
                             .setAutoCancel(true)
                             .setContentIntent(actionPendingIntent);
@@ -171,7 +179,6 @@ public class NotificationPublisher extends BroadcastReceiver {
         minute = now.getMinuteOfHour();
         second = now.getSecondOfMinute();
         //millisOfSecond = now.getMillisOfSecond();
-
         //long millis = day * 86400000 - (3600000 * hours + 60000 * minute + 1000 * second + millisOfSecond);
         long millis = day * 86400000 - (3600000 * hours + 60000 * minute + 1000 * second);
         return millis;
@@ -189,5 +196,60 @@ public class NotificationPublisher extends BroadcastReceiver {
         vibration = prefs.getBoolean("notifications_new_message_vibrate", true);
         show = prefs.getBoolean("notifications_new_message", true);
         ringtone = prefs.getString("notifications_new_message_ringtone", "content://settings/system/notification_sound");
+    }
+    public static void testScheduleNotification(final Context context, int notificationId, UserVK userVK) {
+        getNotificationPreference(context);
+        NotificationCompat.Builder builder;
+        long delay = dayToMillis(userVK.getDayToNextBirht());
+        boolean original = userVK.isNotify();
+        String largeIconUrl = userVK.getAvatarURL();
+        Picasso.with(context).load(largeIconUrl).into(new Target() {
+            @Override
+            public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                setAvatar(bitmap);
+            }
+
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+                setAvatar(context);
+            }
+
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {
+                setAvatar(context);
+            }
+        });
+
+        builder = new NotificationCompat.Builder(context)
+                .setContentText(userVK.getName())
+                .setAutoCancel(true)
+                .setSmallIcon(R.drawable.ic_birthday)
+                .setLargeIcon(avatar)
+                .setSound(Uri.parse(ringtone));
+        if (vibration) builder.setDefaults(DEFAULT_VIBRATE);
+        if (original) builder.setContentTitle(context.getString(R.string.str_birthday));
+        else builder.setContentTitle(context.getString(R.string.str_birthday_soon));
+
+        Intent intent = new Intent(context, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.setAction(DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION);
+        intent.putExtra("action", DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION);
+        intent.putExtra("userName", userVK.getName());
+        intent.putExtra("userAvatarURL", userVK.getAvatarURL());
+        PendingIntent activity = PendingIntent.getActivity(context, notificationId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        builder.setContentIntent(activity);
+
+        Notification notification = builder.build();
+
+        Intent notificationIntent = new Intent(context, NotificationPublisher.class);
+        notificationIntent.setAction(DISPLAY_NOTIFICATION_ACTION);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION_ID, notificationId);
+        notificationIntent.putExtra(NotificationPublisher.NOTIFICATION, notification);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, notificationId, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        long futureInMillis = SystemClock.elapsedRealtime() + delay;
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), pendingIntent);
+        //alarmManager.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), pendingIntent);
     }
 }

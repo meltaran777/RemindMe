@@ -1,10 +1,9 @@
 package org.bogdan.remindme.activities;
 
-import android.app.Fragment;
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -16,7 +15,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
-import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKCallback;
@@ -30,7 +29,6 @@ import com.vk.sdk.api.VKRequest;
 import com.vk.sdk.api.VKResponse;
 import com.vk.sdk.api.model.VKApiUserFull;
 import com.vk.sdk.api.model.VKUsersArray;
-import com.vk.sdk.util.VKUtil;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -42,15 +40,13 @@ import org.bogdan.remindme.fragment.BirhtdayFragment;
 import org.bogdan.remindme.util.NotificationPublisher;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import rx.Observable;
-import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
 import rx.functions.Action1;
 import rx.functions.Func1;
 
@@ -70,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager viewPager;
     private NavigationView navigationView;
 
+    private static boolean Vklogin = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +79,25 @@ public class MainActivity extends AppCompatActivity {
         initToolbar();
         initTabs();
         initNavigationView();
+        showHappyBirthdayDialog();
+    }
+
+    private void showHappyBirthdayDialog() {
+        //if (getIntent().getAction() != null)
+          //  if (getIntent().getAction() == NotificationPublisher.DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION) {
+        Bundle bundle = getIntent().getExtras();
+        if (bundle !=null)
+            if (getIntent().getStringExtra("action").equalsIgnoreCase(NotificationPublisher.DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION)) {
+            String userName = getIntent().getStringExtra("userName");
+            String userAvatarURL = getIntent().getStringExtra("userAvatarURL");
+
+            Intent happyBirthdayDialogIntent = new Intent(getApplicationContext(), HappyBirthdayDialogActivity.class);
+            happyBirthdayDialogIntent.putExtra("userName", userName);
+            happyBirthdayDialogIntent.putExtra("userAvatarURL", userAvatarURL);
+
+            startActivity(happyBirthdayDialogIntent);
+        }
+       //     }
     }
 
     @Override
@@ -154,7 +170,6 @@ public class MainActivity extends AppCompatActivity {
     private void showNotificationTab(int tab){
         viewPager.setCurrentItem(tab);
     }
-
     private void initNavigationView(){
         drawerLayout=(DrawerLayout) findViewById(R.id.DrawerLayout);
 
@@ -187,18 +202,25 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     private String[] vkScope = new String[]{VKScope.MESSAGES, VKScope.FRIENDS, VKScope.WALL};
+    private VKRequest getVKFriendsListRequest = VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
     private void vkLogin() {
         //String[] fingetprints = VKUtil.getCertificateFingerprint(this,this.getPackageName());
-        if(!DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList())) {
-            VKSdk.login(this, vkScope);
+        if (isInternetAvailable()) {
+            if (!VKSdk.isLoggedIn()) VKSdk.login(this, vkScope);
+            else {
+                vkRequestExecute(getVKFriendsListRequest);
+            }
+        }else {
+            DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList());
+            Collections.sort(UserVK.getUsersList());
         }
     }
-    private VKRequest getVKFriendsList = VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
             @Override
             public void onResult(VKAccessToken res) {
-                vkRequestExecute(getVKFriendsList);
+                setVklogin(true);
+                vkRequestExecute(getVKFriendsListRequest);
             }
 
             @Override
@@ -208,7 +230,6 @@ public class MainActivity extends AppCompatActivity {
         }))
             super.onActivityResult(requestCode, resultCode, data);
     }
-
     private void vkRequestExecute(VKRequest currentRequest){
         currentRequest.executeWithListener(new VKRequest.VKRequestListener() {
             @Override
@@ -231,8 +252,7 @@ public class MainActivity extends AppCompatActivity {
                             format = formats[i];
                             try {
                                 birthDate = DateTimeFormat.forPattern(format).parseDateTime(userFull.bdate);
-                                UserVK.getUsersList().add(new UserVK(userFull.toString(), birthDate, format,avatarURL,false));
-
+                                UserVK.getUsersList().add(new UserVK(userFull.id, userFull.toString(), birthDate, format, avatarURL, false));
                             } catch (Exception ignored) {
                                 Log.d("VkApp", "Exception ignore " + response);
                             }
@@ -242,12 +262,16 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 }
+                DBHelper.updateTableUserVKValue(getApplicationContext());
+                DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList());
                 Collections.sort(UserVK.getUsersList());
-                DBHelper.insertTableUserVKValue(getApplicationContext());
                 createNotification();
 
-                //BirhtdayFragment instanceFragment = (BirhtdayFragment) getSupportFragmentManager().findFragmentById(R.id.birthday_fragment);
-                //instanceFragment.getAdapter().notifyDataSetChanged();
+                BirhtdayFragment instanceFragment = (BirhtdayFragment) getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.ViewPager + ":" + "1");
+                if (instanceFragment != null) {
+                        instanceFragment.getAdapter().notifyDataSetChanged();
+                        if (!UserVK.getUsersList().isEmpty()) instanceFragment.getTvError().setVisibility(TextView.INVISIBLE);
+                    }
             }
 
             @Override
@@ -272,8 +296,20 @@ public class MainActivity extends AppCompatActivity {
     private void createNotification(){
         List<UserVK> userVKList=UserVK.getUsersList();
         if(!userVKList.isEmpty()) {
-            Log.d("VkAppDP", "createNotification ");
+            Log.d("NotificationDebug", "Notification created");
             NotificationPublisher.scheduleNotification(getApplicationContext(), 0, userVKList.get(0));
-        }else Log.d("VkAppDP", "createNotification -- Empty ");
+        }else Log.d("NotificationDebug", "Create notification fail,empty list");
+    }
+    public boolean isInternetAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(this.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        Log.i("InternetConnection", "isInternetAvailable: "+(netInfo != null && netInfo.isConnectedOrConnecting()));
+        return netInfo != null && netInfo.isConnectedOrConnecting();
+    }
+    public static boolean isVklogin() {
+        return Vklogin;
+    }
+    public void setVklogin(boolean vklogin) {
+        Vklogin = vklogin;
     }
 }

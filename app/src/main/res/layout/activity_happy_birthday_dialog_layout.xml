@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="org.bogdan.remindme.activities.HappyBirthdayDialogActivity"
+    android:id="@+id/activity_happy_birthday_dialog_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:layout_weight="0">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_birthday"
+            android:id="@+id/imageViewAvatar"
+            android:layout_weight="0" />
+
+        <TextView
+            android:text="@string/birthday_big"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/textViewName"
+            android:textColor="@color/colorWhite"
+            android:textSize="8pt"
+            android:textAlignment="center"
+            android:paddingLeft="10dp"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ic_back"
+                android:background="@drawable/btn_back_bg"
+                android:id="@+id/imageButtonPrevious" />
+
+            <Spinner
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:id="@+id/spinnerMessageCategory" />
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ic_next"
+                android:background="@drawable/btn_next_bg"
+                android:id="@+id/imageButtonNext" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+
+            <TextSwitcher
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/textHappyBirthdaySwitcher">
+            </TextSwitcher>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0">
+        <Button
+            android:text="@string/close"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/btn_close"
+            android:layout_weight="1"
+            android:background="@drawable/ripple_btn_bg" />
+        <Button
+            android:text="@string/Selebrate"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:id="@+id/btn_happy_birthday"
+            android:layout_weight="1"
+            android:background="@drawable/ripple_btn_bg" />
+    </LinearLayout>
+
+</LinearLayout>

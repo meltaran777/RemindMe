@@ -34,7 +34,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             DBHelper.readTableAlarms(context, alarmList);
             DBHelper.closeDB();
 
-            if (AlarmClock.createAlarm(context, alarmMgr, alarmList, true))
+            if (AlarmClock.createAlarm(context, intent, alarmMgr, alarmList))
                 startAlarmDialog(context, intent);
         }
     }

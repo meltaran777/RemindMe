@@ -73,19 +73,16 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
                     }
                     UserVK userVK = data.get(position);
                     userVK.setNotify(isChecked);
+
                     ContentValues contentValues = new ContentValues();
                     DBHelper.putUserValue(view.getContext(), userVK, contentValues);
-
-                    int userVKIdDB = position + 1;
-                    String strUserVKIdDB = String.valueOf(userVKIdDB);
-                    DBHelper.getDatabase(view.getContext()).update(DBHelper.TABLE_USERS, contentValues, DBHelper.KEY_ID+ "=?", new String[] {strUserVKIdDB} );
+                    DBHelper.getDatabase(view.getContext()).update(DBHelper.TABLE_USERS, contentValues, DBHelper.KEY_NAME+ "=?", new String[] {userVK.getName()} );
 
                     data.get(position).setNotify(isChecked);
 
-                    Toast.makeText(view.getContext(), data.get(position).getName()+" "+position, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(view.getContext(), data.get(position).getName()+" "+position, Toast.LENGTH_SHORT).show();
                     //Test Notification
-                   // NotificationPublisher.scheduleNotification(view.getContext(), 0, position, data.get(position),
-                   //         data.get(position).getAvatarURL(), data.get(position).isNotify());
+                    NotificationPublisher.testScheduleNotification(view.getContext(), 0, userVK);
                 }
             });
         }

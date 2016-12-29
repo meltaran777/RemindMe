@@ -14,6 +14,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -264,10 +265,6 @@ public class DBHelper extends SQLiteOpenHelper {
         }else contentValues.put(DBHelper.getDbHelper(context).KEY_SUNDAY_ALARM, 0);
     }
 
-
-
-
-
     public static boolean readUserVKTable(Context context, List<UserVK> userVKList) {
         userVKList.clear();
         Cursor cursor = DBHelper.getDatabase(context).query(DBHelper.TABLE_USERS ,null ,null ,null ,null ,null ,null);
@@ -305,6 +302,49 @@ public class DBHelper extends SQLiteOpenHelper {
         contentValues.put(DBHelper.getDbHelper(context).KEY_BDATE, bdate);
         contentValues.put(DBHelper.getDbHelper(context).KEY_DATE_FORMAT, userVK.getDateFormat());
         contentValues.put(DBHelper.getDbHelper(context).KEY_NOTIFY, notify);
+    }
+    public static void updateTableUserVKValue(Context context) {
+        List<UserVK> oldUserVKList = new ArrayList<>();
+        readUserVKTable(context, oldUserVKList);
+
+        ContentValues contentValues = new ContentValues();
+
+        for (UserVK userVK : UserVK.getUsersList()) {
+            boolean userExist = false;
+            for (UserVK oldUserVK : oldUserVKList){
+                if (oldUserVK.getName().equals(userVK.getName())) {
+                    userExist = true;
+                }
+            }
+            if (!userExist) {
+                Log.d("VKDebug", "updateTableUserVKValue:Update "+userVK.getName());
+                DateTime birthDate = userVK.getBirthDate();
+                DateTimeFormatter fmt = DateTimeFormat.forPattern(userVK.getDateFormat());
+                String bdate = fmt.print(birthDate);
+
+                int notify;
+                if (userVK.isNotify()) notify = 1;
+                else notify = 0;
+
+                contentValues.put(DBHelper.getDbHelper(context).KEY_NAME, userVK.getName());
+                contentValues.put(DBHelper.getDbHelper(context).KEY_AVATAR_URL, userVK.getAvatarURL());
+                contentValues.put(DBHelper.getDbHelper(context).KEY_BDATE, bdate);
+                contentValues.put(DBHelper.getDbHelper(context).KEY_DATE_FORMAT, userVK.getDateFormat());
+                contentValues.put(DBHelper.getDbHelper(context).KEY_NOTIFY, notify);
+
+                DBHelper.getDatabase(context).insert(DBHelper.TABLE_USERS, null, contentValues);
+            }
+        }
+        for (UserVK oldUserVK : oldUserVKList) {
+            boolean userWasDeleted = true;
+            for (UserVK userVK : UserVK.getUsersList()) {
+                if (oldUserVK.getName().equals(userVK.getName())) userWasDeleted = false;
+            }
+                if (userWasDeleted){
+                    Log.d("VKDebug", "updateTableUserVKValue:Delete "+oldUserVK.getName());
+                    DBHelper.getDatabase(context).delete(DBHelper.TABLE_USERS, DBHelper.KEY_NAME + "=?", new String[]{oldUserVK.getName()});
+                }
+        }
     }
     public static void insertTableUserVKValue(Context context) {
         ContentValues contentValues = new ContentValues();
