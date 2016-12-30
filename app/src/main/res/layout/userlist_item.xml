@@ -25,25 +25,28 @@
             android:columnCount="2"
             android:orientation="horizontal" >
 
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
-            android:layout_gravity="left"
-            android:orientation="vertical">
+            android:layout_gravity="left">
 
-            <ImageView
+            <ImageButton
                 android:id="@+id/imageViewAvatarVK"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:background="@android:color/transparent"
+                app:srcCompat="@drawable/ic_birthday"/>
 
-        </LinearLayout>
+        </FrameLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
             android:layout_gravity="left"
+            android:layout_weight="1"
             android:orientation="vertical">
 
             <android.support.v7.widget.AppCompatCheckBox
@@ -78,7 +81,6 @@
                 android:layout_height="wrap_content"
                 android:textSize="6pt"
                 android:textColor="@color/Black" />
-
 
         </LinearLayout>
 

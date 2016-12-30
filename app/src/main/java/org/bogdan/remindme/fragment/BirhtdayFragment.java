@@ -10,9 +10,12 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -31,6 +34,7 @@ import com.vk.sdk.api.model.VKUsersArray;
 import com.vk.sdk.util.VKUtil;
 
 import org.bogdan.remindme.R;
+import org.bogdan.remindme.activities.HappyBirthdayDialogActivity;
 import org.bogdan.remindme.activities.MainActivity;
 import org.bogdan.remindme.content.UserVK;
 import org.bogdan.remindme.adapter.UserListAdapter;
@@ -85,7 +89,6 @@ public class BirhtdayFragment extends AbstractTabFragment{
 
         return view;
     }
-
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);

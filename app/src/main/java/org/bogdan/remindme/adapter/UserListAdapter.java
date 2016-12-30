@@ -8,14 +8,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.ImageView;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
 import org.bogdan.remindme.R;
-import org.bogdan.remindme.content.AlarmClock;
 import org.bogdan.remindme.content.UserVK;
 import org.bogdan.remindme.database.DBHelper;
 import org.bogdan.remindme.util.NotificationPublisher;
@@ -28,7 +27,7 @@ import java.util.List;
 /**
  * Created by Bodia on 30.10.2016.
  */
-public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.RemindViewHollder> {
+public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.RemindViewHollder>{
 
     private static final int IMG_WIDTH = 150;
     private static final int IMG_HIGH = 150;
@@ -49,10 +48,9 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
 
     @Override
     public void onBindViewHolder(RemindViewHollder holder, final int position) {
-
         if(!data.isEmpty()) {
             if(data.get(position).getAvatarURL()!=null){
-                Picasso.with(view.getContext()).load(data.get(position).getAvatarURL()).resize(IMG_WIDTH, IMG_HIGH).into(holder.imageView);
+                Picasso.with(view.getContext()).load(data.get(position).getAvatarURL()).resize(IMG_WIDTH, IMG_HIGH).into(holder.imageBtnAvatar);
             }
 
             if(data.get(position).getDateFormat()!=null){
@@ -61,6 +59,13 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
                 holder.tvBdate.setText(view.getContext().getString(R.string.str_birthday_text)+data.get(position).getBirthDate().toString(dateTimeFormat));
                 holder.tvTimeToBdate.setText(view.getContext().getString(R.string.str_next_birth)+UserVK.getTimeToNextBirht(data.get(position)));
             }
+
+            holder.imageBtnAvatar.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Toast.makeText(view.getContext(), String.valueOf(position), Toast.LENGTH_SHORT).show();
+                }
+            });
 
             holder.checkBoxVIP.setOnCheckedChangeListener(null);
             holder.checkBoxVIP.setChecked(data.get(position).isNotify());
@@ -97,7 +102,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
         TextView tvName;
         TextView tvBdate;
         TextView tvTimeToBdate;
-        ImageView imageView;
+        ImageButton imageBtnAvatar;
         CheckBox checkBoxVIP;
 
         public RemindViewHollder(View itemView) {
@@ -107,8 +112,9 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
             tvName = (TextView) itemView.findViewById(R.id.tvName);
             tvBdate = (TextView) itemView.findViewById(R.id.tvBdate);
             tvTimeToBdate = (TextView) itemView.findViewById(R.id.tvTimeToBdate);
-            imageView = (ImageView) itemView.findViewById(R.id.imageViewAvatarVK);
+            imageBtnAvatar = (ImageButton) itemView.findViewById(R.id.imageViewAvatarVK);
             checkBoxVIP = (CheckBox) itemView.findViewById(R.id.checkboxVIP);
+
         }
     }
 }

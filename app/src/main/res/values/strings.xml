@@ -128,5 +128,6 @@
     <string name="time">Time</string>
     <string name="tv_vk_not_load_text">Please restart app and login VK to see friends birthday list</string>
     <string name="Selebrate">Happy Birthday</string>
+    <string name="happy_birthday">Happy Birthday</string>
 
 </resources>

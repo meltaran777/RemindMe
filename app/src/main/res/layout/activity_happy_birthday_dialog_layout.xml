@@ -52,12 +52,11 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:srcCompat="@drawable/ic_back"
-                android:background="@drawable/btn_back_bg"
                 android:id="@+id/imageButtonPrevious" />
 
             <Spinner
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:id="@+id/spinnerMessageCategory" />
 
@@ -65,7 +64,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:srcCompat="@drawable/ic_next"
-                android:background="@drawable/btn_next_bg"
                 android:id="@+id/imageButtonNext" />
 
         </LinearLayout>
@@ -78,6 +76,9 @@
             <TextSwitcher
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:scrollbars="vertical"
+                android:layout_gravity="center_horizontal"
+                android:textAlignment="center"
                 android:id="@+id/textHappyBirthdaySwitcher">
             </TextSwitcher>
 

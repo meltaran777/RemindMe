@@ -1,8 +1,10 @@
 package org.bogdan.remindme.activities;
 
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.method.ScrollingMovementMethod;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,6 +15,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
@@ -23,6 +27,7 @@ import com.squareup.picasso.Picasso;
 import org.bogdan.remindme.R;
 
 public class HappyBirthdayDialogActivity extends AppCompatActivity implements View.OnClickListener, TextSwitcher.ViewFactory, View.OnTouchListener {
+    private static final float MIN_DISTANCE = 150;
     private Button btnClose;
     private  Button btnHappyBirthday;
     private  ImageButton btnPrevious;
@@ -32,16 +37,23 @@ public class HappyBirthdayDialogActivity extends AppCompatActivity implements Vi
     private  TextSwitcher textSwitcher;
     private  Spinner messageCategorySpinner;
 
-    private int messageCategory = 0;
-    private int mCounter = 0;
+    private int messageCategoryIndex = 0;
+    private int arrayCurrElemInd = 0;
 
     private float x1 = 0;
     private float y1 = 0;
     private float x2 = 0;
     private float y2 = 0;
+
+    String[] friendsText;
+    String[] darlingText;
+    String[] favouriteText;
+    String[] manText;
+    String[] girlText;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_happy_birthday_dialog_layout);
 
         btnClose = (Button) findViewById(R.id.btn_close);
@@ -67,7 +79,12 @@ public class HappyBirthdayDialogActivity extends AppCompatActivity implements Vi
         btnPrevious.setOnClickListener(this);
         btnNext.setOnClickListener(this);
 
-        updateCounter();
+        friendsText = getResources().getStringArray(R.array.happyBirthdayFriendArray);
+        darlingText = getResources().getStringArray(R.array.happyBirthdayDarlingArray);
+        favouriteText = getResources().getStringArray(R.array.happyBirthdayFavouriteArray);
+        girlText = getResources().getStringArray(R.array.happyBirthdayGirlArray);
+        manText = getResources().getStringArray(R.array.happyBirthdayManArray);
+        updateTextView(3);
     }
 
     private void textSwitcherSetAnimation() {
@@ -90,7 +107,8 @@ public class HappyBirthdayDialogActivity extends AppCompatActivity implements Vi
         messageCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                messageCategory = position;
+                messageCategoryIndex = position;
+                updateTextView(3);
                 //Toast.makeText(getApplicationContext(), messageCategorySpinner.getSelectedItem().toString(), Toast.LENGTH_SHORT).show();
             }
 
@@ -108,16 +126,13 @@ public class HappyBirthdayDialogActivity extends AppCompatActivity implements Vi
                 finish();
                 break;
             case R.id.btn_happy_birthday:
-
                 finish();
                 break;
             case R.id.imageButtonPrevious:
-                mCounter--;
-                updateCounter();
+                updateTextView(0);
                 break;
             case R.id.imageButtonNext:
-                mCounter++;
-                updateCounter();
+                updateTextView(1);
                 break;
         }
     }
@@ -125,17 +140,47 @@ public class HappyBirthdayDialogActivity extends AppCompatActivity implements Vi
     @Override
     public View makeView() {
         TextView textView = new TextView(this);
-        textView.setGravity(Gravity.CENTER | Gravity.CENTER_HORIZONTAL);
-        textView.setTextSize(70);
-        textView.setTextColor(Color.RED);
+        textView.setVerticalScrollBarEnabled(true);
+        textView.setMovementMethod(new ScrollingMovementMethod());
+        textView.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER);
+        textView.setTextSize(20);
+        textView.setTextColor(Color.BLACK);
         return textView;
     }
-    private void updateCounter() {
-        textSwitcher.setText(String.valueOf(mCounter));
+    private void updateTextView(int operationType) {
+        String selectedArray[];
+        switch (messageCategoryIndex){
+            case 0:
+                selectedArray = friendsText;
+                break;
+            case 1:
+                selectedArray = darlingText;
+                break;
+            case 2:
+                selectedArray = favouriteText;
+                break;
+            case 3:
+                selectedArray = manText;
+                break;
+            case 4:
+                selectedArray = girlText;
+                break;
+            default:
+                selectedArray = friendsText;
+        }
+
+        if (operationType == 0) arrayCurrElemInd--;
+        if (operationType == 1) arrayCurrElemInd++;
+        if (operationType == 3) arrayCurrElemInd = 0;
+
+        if (arrayCurrElemInd > 4) arrayCurrElemInd--;
+        if (arrayCurrElemInd < 0) arrayCurrElemInd++;
+
+        textSwitcher.setText(selectedArray[arrayCurrElemInd]);
     }
 
     @Override
-    public boolean onTouch(View v, MotionEvent event) {
+    public boolean dispatchTouchEvent(MotionEvent event) {
         switch (event.getAction())
         {// when user first touches the screen we get x and y coordinate
             case MotionEvent.ACTION_DOWN:
@@ -149,14 +194,12 @@ public class HappyBirthdayDialogActivity extends AppCompatActivity implements Vi
                 x2 = event.getX();
                 y2 = event.getY();
                 //if left to right sweep event on screen(back)
-                if (x1 < x2){// Toast.makeText(getApplicationContext(), "Left to Right Swap Performed", Toast.LENGTH_LONG).show();
-                    mCounter--;
-                    updateCounter();
+                if (x1 + MIN_DISTANCE < x2){// Toast.makeText(getApplicationContext(), "Left to Right Swap Performed", Toast.LENGTH_LONG).show();
+                    updateTextView(0);
                 }
                 // if right to left sweep event on screen(next)
-                if (x1 > x2){//   Toast.makeText(getApplicationContext(), "Right to Left Swap Performed", Toast.LENGTH_LONG).show();
-                    mCounter++;
-                    updateCounter();
+                if (x1 > x2 + MIN_DISTANCE){// Toast.makeText(getApplicationContext(), "Right to Left Swap Performed", Toast.LENGTH_LONG).show();
+                    updateTextView(1);
                 }
                 // if UP to Down sweep event on screen
                 if (y1 < y2){// Toast.makeText(getApplicationContext(), "UP to Down Swap Performed", Toast.LENGTH_LONG).show();
@@ -167,6 +210,11 @@ public class HappyBirthdayDialogActivity extends AppCompatActivity implements Vi
                 break;
             }
         }
-        return true;
+        return super.dispatchTouchEvent(event);
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        return false;
     }
 }
