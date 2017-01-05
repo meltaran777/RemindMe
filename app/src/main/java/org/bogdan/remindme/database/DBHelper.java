@@ -28,7 +28,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_USERS = "users";
     public static final String TABLE_ALARMS = "alarms";
 
-    public static final String KEY_ID = "_id";
+    public static final String KEY_ID = "id";
     public static final String KEY_NAME = "name";
     public static final String KEY_BDATE = "bdate";
     public static final String KEY_DATE_FORMAT = "date_format";
@@ -212,7 +212,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
 
-    public static void putAlarmValue(Context context, ContentValues contentValues,AlarmClock alarmClock) {
+    public static void putAlarmValue(Context context, ContentValues contentValues, AlarmClock alarmClock) {
         String descString = alarmClock.getDescription();
         String ringtoneURI = alarmClock.getRingtoneURI();
         int hour = alarmClock.getHour();
@@ -280,7 +280,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 boolean notify;
                 if (cursor.getInt(notifyIndex) == 1) notify = true; else notify = false;
                 DateTime birthDate = DateTimeFormat.forPattern(cursor.getString(dateFormatIndex)).parseDateTime(cursor.getString(bdateIndex));
-                userVKList.add(new UserVK(cursor.getString(nameIndex), birthDate, cursor.getString(dateFormatIndex), cursor.getString(avatarURLIndex),notify));
+                userVKList.add(new UserVK(cursor.getInt(idIndex), cursor.getString(nameIndex), birthDate, cursor.getString(dateFormatIndex), cursor.getString(avatarURLIndex),notify));
 
             }while (cursor.moveToNext());
         }else Log.d("DB","0 rows");
@@ -297,6 +297,7 @@ public class DBHelper extends SQLiteOpenHelper {
         int notify;
         if (userVK.isNotify()) notify = 1; else notify = 0;
 
+        contentValues.put(DBHelper.getDbHelper(context).KEY_ID, userVK.getId());
         contentValues.put(DBHelper.getDbHelper(context).KEY_NAME, userVK.getName());
         contentValues.put(DBHelper.getDbHelper(context).KEY_AVATAR_URL, userVK.getAvatarURL());
         contentValues.put(DBHelper.getDbHelper(context).KEY_BDATE, bdate);
@@ -317,7 +318,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 }
             }
             if (!userExist) {
-                Log.d("VKDebug", "updateTableUserVKValue:Update "+userVK.getName());
+                Log.d("VKDebug", "updateTableUserVKValue:Add "+userVK.getName());
                 DateTime birthDate = userVK.getBirthDate();
                 DateTimeFormatter fmt = DateTimeFormat.forPattern(userVK.getDateFormat());
                 String bdate = fmt.print(birthDate);
@@ -326,6 +327,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 if (userVK.isNotify()) notify = 1;
                 else notify = 0;
 
+                contentValues.put(DBHelper.getDbHelper(context).KEY_ID, userVK.getId());
                 contentValues.put(DBHelper.getDbHelper(context).KEY_NAME, userVK.getName());
                 contentValues.put(DBHelper.getDbHelper(context).KEY_AVATAR_URL, userVK.getAvatarURL());
                 contentValues.put(DBHelper.getDbHelper(context).KEY_BDATE, bdate);

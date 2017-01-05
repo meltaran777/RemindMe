@@ -84,7 +84,7 @@ public class CalendarFragment extends AbstractTabFragment{
 
                 for(UserVK userVK : UserVK.getUsersList()){
 
-                    LocalDate bdate = UserVK.getNextBirthDate(userVK.getBirthDate());
+                    LocalDate bdate = userVK.getNextBirthDate();
 
                     if(bdate.equals(selectedDay)){
 
@@ -117,7 +117,7 @@ public class CalendarFragment extends AbstractTabFragment{
         today.add(todayDay);
 
         for (UserVK userVK : UserVK.getUsersList()) {
-            LocalDate date = UserVK.getNextBirthDate(userVK.getBirthDate());
+            LocalDate date = userVK.getNextBirthDate();
             // might be a more elegant way to do this part, but this is very explicit
             int year = date.getYear();
             int month = date.getMonthOfYear() - 1; // months are 0-based in Calendar

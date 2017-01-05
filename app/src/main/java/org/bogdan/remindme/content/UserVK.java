@@ -25,7 +25,7 @@ public class UserVK implements Comparable<UserVK> {
 
     static private ArrayList<UserVK> users=new ArrayList<>();
 
-    public UserVK(int id,String name, DateTime birthDate, String dateFormat, String avatarURL, boolean notify) {
+    public UserVK (int id, String name, DateTime birthDate, String dateFormat, String avatarURL, boolean notify) {
         this.id = id;
         this.name = name;
         this.birthDate = birthDate;
@@ -34,30 +34,13 @@ public class UserVK implements Comparable<UserVK> {
         this.notify = notify;
     }
 
-    public UserVK(String name, DateTime birthDate, String dateFormat, String avatarURL, boolean notify) {
-        this.name = name;
-        this.birthDate = birthDate;
-        this.dateFormat = dateFormat;
-        this.avatarURL =avatarURL;
-        this.notify = notify;
-    }
-
-    public DateTime getBirthDate() {
-        return birthDate;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getDateFormat() {
-        return dateFormat;
-    }
-
-    public String getAvatarURL() {return avatarURL; }
-
-    public static List<UserVK> getUsersList(){
-        return users;
+    public UserVK (UserVK userVK) {
+        this.id = userVK.getId();
+        this.name = userVK.getName();
+        this.birthDate = userVK.getBirthDate();
+        this.dateFormat = userVK.getDateFormat();
+        this.avatarURL =userVK.getAvatarURL();
+        this.notify = userVK.isNotify();
     }
 
     @Override
@@ -68,9 +51,8 @@ public class UserVK implements Comparable<UserVK> {
         return dayThis.compareTo(dayAnother);
     }
 
-    public static String getTimeToNextBirht(UserVK userVK){
-
-        LocalDate dateOfBirth =userVK.getBirthDate().toLocalDate();
+    public String getTimeToNextBirht(){
+        LocalDate dateOfBirth = getBirthDate().toLocalDate();
         LocalDate currentDate = new LocalDate();
         // Take birthDay  and birthMonth  from dateOfBirth
         int birthDay = dateOfBirth.getDayOfMonth();
@@ -95,8 +77,7 @@ public class UserVK implements Comparable<UserVK> {
     }
 
 
-    public static LocalDate getNextBirthDate(DateTime birthDate) {
-
+    public LocalDate getNextBirthDate() {
         LocalDate dateOfBirth =birthDate.toLocalDate();
         LocalDate currentDate = new LocalDate();
         // Take birthDay  and birthMonth  from dateOfBirth
@@ -115,7 +96,6 @@ public class UserVK implements Comparable<UserVK> {
     }
 
     public int getDayToNextBirht(){
-
         LocalDate dateOfBirth =getBirthDate().toLocalDate();
         LocalDate currentDate = new LocalDate();
         // Take birthDay  and birthMonth  from dateOfBirth
@@ -140,15 +120,18 @@ public class UserVK implements Comparable<UserVK> {
     public static List<UserVK> getUserVKListFull(List<UserVK> userVKList){
         List<UserVK> userVKListFull = new ArrayList<>();
         for (UserVK userVK : userVKList){
-            userVKListFull.add(userVK);
             if (userVK.isNotify()) {
-                userVK.setBirthDate(userVK.getBirthDate().minusDays(3));
-                userVKListFull.add(userVK);
+                UserVK user = new UserVK(userVK);
+                user.setBirthDate(userVK.getBirthDate().minusDays(3));
+                user.setNotify(false);
+                userVKListFull.add(user);
             }
+            UserVK user = new UserVK(userVK);
+            user.setNotify(true);
+            userVKListFull.add(user);
         }
         return userVKListFull;
     }
-
 
     public boolean isNotify() {
         return notify;
@@ -160,6 +143,32 @@ public class UserVK implements Comparable<UserVK> {
 
     public void setBirthDate(DateTime birthDate) {
         this.birthDate = birthDate;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public DateTime getBirthDate() {
+        return birthDate;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDateFormat() {
+        return dateFormat;
+    }
+
+    public String getAvatarURL() {return avatarURL; }
+
+    public static List<UserVK> getUsersList(){
+        return users;
     }
 
 }

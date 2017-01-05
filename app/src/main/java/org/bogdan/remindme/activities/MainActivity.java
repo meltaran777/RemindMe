@@ -41,7 +41,6 @@ import org.bogdan.remindme.util.NotificationPublisher;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -86,16 +85,20 @@ public class MainActivity extends AppCompatActivity {
         //if (getIntent().getAction() != null)
           //  if (getIntent().getAction() == NotificationPublisher.DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION) {
         Bundle bundle = getIntent().getExtras();
-        if (bundle !=null)
-            if (getIntent().getStringExtra("action").equalsIgnoreCase(NotificationPublisher.DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION)) {
+        if (bundle !=null) {
+            String action = bundle.getString("action","");
+            if (action.equalsIgnoreCase(NotificationPublisher.DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION)) {
             String userName = getIntent().getStringExtra("userName");
             String userAvatarURL = getIntent().getStringExtra("userAvatarURL");
+            int userId = getIntent().getIntExtra("userId", 0);
 
             Intent happyBirthdayDialogIntent = new Intent(getApplicationContext(), HappyBirthdayDialogActivity.class);
+            happyBirthdayDialogIntent.putExtra("userId", userId);
             happyBirthdayDialogIntent.putExtra("userName", userName);
             happyBirthdayDialogIntent.putExtra("userAvatarURL", userAvatarURL);
 
             startActivity(happyBirthdayDialogIntent);
+            }
         }
        //     }
     }
@@ -170,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
     private void showNotificationTab(int tab){
         viewPager.setCurrentItem(tab);
     }
+
     private void initNavigationView(){
         drawerLayout=(DrawerLayout) findViewById(R.id.DrawerLayout);
 
@@ -202,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     private String[] vkScope = new String[]{VKScope.MESSAGES, VKScope.FRIENDS, VKScope.WALL};
+
     private VKRequest getVKFriendsListRequest = VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
     private void vkLogin() {
         //String[] fingetprints = VKUtil.getCertificateFingerprint(this,this.getPackageName());
@@ -215,6 +220,7 @@ public class MainActivity extends AppCompatActivity {
             Collections.sort(UserVK.getUsersList());
         }
     }
+
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
             @Override
@@ -230,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
         }))
             super.onActivityResult(requestCode, resultCode, data);
     }
+
     private void vkRequestExecute(VKRequest currentRequest){
         currentRequest.executeWithListener(new VKRequest.VKRequestListener() {
             @Override
@@ -293,23 +300,34 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
     private void createNotification(){
         List<UserVK> userVKList=UserVK.getUsersList();
         if(!userVKList.isEmpty()) {
             Log.d("NotificationDebug", "Notification created");
-            NotificationPublisher.scheduleNotification(getApplicationContext(), 0, userVKList.get(0));
+
+            List<UserVK> userVKListFull = UserVK.getUserVKListFull(userVKList);
+            Collections.sort(userVKListFull);
+            UserVK userVK = userVKListFull.get(0);
+
+            NotificationPublisher.scheduleNotification(getApplicationContext(), userVK);
         }else Log.d("NotificationDebug", "Create notification fail,empty list");
+
     }
+
     public boolean isInternetAvailable() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(this.CONNECTIVITY_SERVICE);
         NetworkInfo netInfo = cm.getActiveNetworkInfo();
         Log.i("InternetConnection", "isInternetAvailable: "+(netInfo != null && netInfo.isConnectedOrConnecting()));
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
+
     public static boolean isVklogin() {
         return Vklogin;
     }
+
     public void setVklogin(boolean vklogin) {
         Vklogin = vklogin;
     }
+
 }

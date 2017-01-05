@@ -1,6 +1,7 @@
 package org.bogdan.remindme.adapter;
 
 import android.content.ContentValues;
+import android.content.Intent;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -10,11 +11,11 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
 import org.bogdan.remindme.R;
+import org.bogdan.remindme.activities.HappyBirthdayDialogActivity;
 import org.bogdan.remindme.content.UserVK;
 import org.bogdan.remindme.database.DBHelper;
 import org.bogdan.remindme.util.NotificationPublisher;
@@ -57,13 +58,22 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
                 DateTimeFormatter dateTimeFormat = DateTimeFormat.forPattern(data.get(position).getDateFormat());
                 holder.tvName.setText(data.get(position).getName());
                 holder.tvBdate.setText(view.getContext().getString(R.string.str_birthday_text)+data.get(position).getBirthDate().toString(dateTimeFormat));
-                holder.tvTimeToBdate.setText(view.getContext().getString(R.string.str_next_birth)+UserVK.getTimeToNextBirht(data.get(position)));
+                holder.tvTimeToBdate.setText(view.getContext().getString(R.string.str_next_birth)+data.get(position).getTimeToNextBirht());
             }
 
             holder.imageBtnAvatar.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(view.getContext(), String.valueOf(position), Toast.LENGTH_SHORT).show();
+                    String userName = data.get(position).getName();
+                    String userAvatarURL = data.get(position).getAvatarURL();
+                    int userId = data.get(position).getId();
+
+                    Intent happyBirthdayDialogIntent = new Intent(view.getContext(), HappyBirthdayDialogActivity.class);
+                    happyBirthdayDialogIntent.putExtra("userId", userId);
+                    happyBirthdayDialogIntent.putExtra("userName", userName);
+                    happyBirthdayDialogIntent.putExtra("userAvatarURL", userAvatarURL);
+
+                    view.getContext().startActivity(happyBirthdayDialogIntent);
                 }
             });
 
@@ -74,7 +84,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
                     if ((data.get(position).getDayToNextBirht() -  data.get(0).getDayToNextBirht()) < 3){
-                        NotificationPublisher.scheduleNotification(view.getContext(),0,data.get(position));
+                        NotificationPublisher.scheduleNotification(view.getContext(), data.get(position));
                     }
                     UserVK userVK = data.get(position);
                     userVK.setNotify(isChecked);
@@ -85,9 +95,9 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
 
                     data.get(position).setNotify(isChecked);
 
-                    //Toast.makeText(view.getContext(), data.get(position).getName()+" "+position, Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(view.getContext(), String.valueOf(data.get(position).getId()), Toast.LENGTH_SHORT).show();
                     //Test Notification
-                    NotificationPublisher.testScheduleNotification(view.getContext(), 0, userVK);
+                    //NotificationPublisher.testScheduleNotification(view.getContext(), userVK);
                 }
             });
         }
