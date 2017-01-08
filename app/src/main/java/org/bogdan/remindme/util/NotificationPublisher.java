@@ -50,20 +50,16 @@ public class NotificationPublisher extends BroadcastReceiver {
     public static String NOTIFICATION_ID_TAG = "notification_id";
     public static String NOTIFICATION = "notification";
 
-    static String ringtone;
-    static boolean vibration;
-    static boolean show;
+    static String ringtone = "content://settings/system/notification_sound";
+    static boolean vibration = true;
     static Bitmap avatar;
 
     @Override
     public void onReceive(final Context context, Intent intent) {
-
-        getNotificationPreference(context);
-
         JodaTimeAndroid.init(context);
 
         //Show notification
-        if (!intent.getAction().equalsIgnoreCase("android.intent.action.BOOT_COMPLETED") && show) {
+        if (!intent.getAction().equalsIgnoreCase("android.intent.action.BOOT_COMPLETED")) {
 
             NotificationManager notificationManager =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -106,9 +102,6 @@ public class NotificationPublisher extends BroadcastReceiver {
     }
 
     public static void scheduleNotification(final Context context, UserVK userVK) {
-
-        getNotificationPreference(context);
-
         final NotificationCompat.Builder builder;
 
         final long delay = dayToMillis(userVK.getDayToNextBirht());
@@ -182,41 +175,37 @@ public class NotificationPublisher extends BroadcastReceiver {
 
     public static void displayAlarmNotification(Context context, int notificationId) {
 
-        getNotificationPreference(context);
+        JodaTimeAndroid.init(context);
 
-        if (show) {
+        LocalTime time = new LocalTime();
+        time = time.plusMinutes(10);
+        String strHour = String.valueOf(time.getHourOfDay());
+        String strMinute = String.valueOf(time.getMinuteOfHour());
+        if (time.getMinuteOfHour() < 10) strMinute = "0" + time.getMinuteOfHour();
+        if (time.getHourOfDay() < 10) strHour = "0" + time.getHourOfDay();
+        String strTime = strHour + ":" + strMinute;
 
-            JodaTimeAndroid.init(context);
+        Intent actionIntent = new Intent(context, NotificationActionService.class)
+                .putExtra("id", notificationId)
+                .setAction(DISPLAY_NOTIFICATION_ACTION);
 
-            LocalTime time = new LocalTime();
-            time = time.plusMinutes(10);
-            String strHour = String.valueOf(time.getHourOfDay());
-            String strMinute = String.valueOf(time.getMinuteOfHour());
-            if (time.getMinuteOfHour() < 10) strMinute = "0" + time.getMinuteOfHour();
-            if (time.getHourOfDay() < 10) strHour = "0" + time.getHourOfDay();
-            String strTime = strHour + ":" + strMinute;
+        PendingIntent actionPendingIntent = PendingIntent.getService(context, notificationId,
+                actionIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-            Intent actionIntent = new Intent(context, NotificationActionService.class)
-                    .putExtra("id", notificationId)
-                    .setAction(DISPLAY_NOTIFICATION_ACTION);
+        NotificationCompat.Builder notificationBuilder =
+                new NotificationCompat.Builder(context)
+                        .setSmallIcon(R.drawable.ic_alarm_notif)
+                        .setContentTitle("Alarm(Set aside) " + strTime)
+                        .setContentText("Push to cancel alarm")
+                        .setSound(Uri.parse(ringtone))
+                        .setAutoCancel(true)
+                        .setContentIntent(actionPendingIntent);
+        if (vibration) notificationBuilder.setDefaults(DEFAULT_VIBRATE);
 
-            PendingIntent actionPendingIntent = PendingIntent.getService(context, notificationId,
-                    actionIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-
-            NotificationCompat.Builder notificationBuilder =
-                    new NotificationCompat.Builder(context)
-                            .setSmallIcon(R.drawable.ic_alarm_notif)
-                            .setContentTitle("Alarm(Set aside) " + strTime)
-                            .setContentText("Push to cancel alarm")
-                            .setSound(Uri.parse(ringtone))
-                            .setAutoCancel(true)
-                            .setContentIntent(actionPendingIntent);
-            if (vibration) notificationBuilder.setDefaults(DEFAULT_VIBRATE);
-
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-            NotificationManagerCompat.from(context).cancelAll();
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        NotificationManagerCompat.from(context).cancelAll();
             notificationManager.notify(notificationId, notificationBuilder.build());
-        }
+
     }
 
     public static long dayToMillis(long day) {
@@ -235,14 +224,7 @@ public class NotificationPublisher extends BroadcastReceiver {
 
     }
 
-    private static void getNotificationPreference(Context context){
 
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-
-        vibration = prefs.getBoolean("notifications_new_message_vibrate", true);
-        show = prefs.getBoolean("notifications_new_message", true);
-        ringtone = prefs.getString("notifications_new_message_ringtone", "content://settings/system/notification_sound");
-    }
 
     private static void setAvatar(Bitmap bitmap) {
         avatar = bitmap;
@@ -251,9 +233,6 @@ public class NotificationPublisher extends BroadcastReceiver {
         avatar = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_birthday);;
     }
     public static void testScheduleNotification(final Context context, UserVK userVK) {
-
-        getNotificationPreference(context);
-
         final NotificationCompat.Builder builder;
 
         boolean original = userVK.isNotify();

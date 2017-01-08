@@ -175,6 +175,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initNavigationView(){
+
         drawerLayout=(DrawerLayout) findViewById(R.id.DrawerLayout);
 
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout,toolbar, R.string.view_navigation_open,R.string.view_navigation_close);
@@ -182,23 +183,38 @@ public class MainActivity extends AppCompatActivity {
         toggle.syncState();
 
         navigationView = (NavigationView) findViewById(R.id.navigation);
+
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
+
                 drawerLayout.closeDrawers();
+
                 switch (item.getItemId()){
+
                     case R.id.menu_item_alarm_clock:
+
                         showNotificationTab(TAB_ONE);
+
                         break;
+
                     case R.id.menu_item_birthday:
+
                         showNotificationTab(TAB_TWO);
+
                         break;
+
                     case R.id.menu_item_calendar:
+
                         showNotificationTab(TAB_THREE);
+
                         break;
+
                     case R.id.menu_item_settings:
+
                         Intent settingsIntent = new Intent(getApplicationContext(),SettingsActivity.class);
                         startActivity(settingsIntent);
+
                         break;
                 }
                 return true;
