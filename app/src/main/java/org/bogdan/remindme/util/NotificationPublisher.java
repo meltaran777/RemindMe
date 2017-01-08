@@ -16,6 +16,7 @@ import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
+import android.util.Log;
 
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
@@ -56,17 +57,23 @@ public class NotificationPublisher extends BroadcastReceiver {
 
     @Override
     public void onReceive(final Context context, Intent intent) {
+
         getNotificationPreference(context);
+
         JodaTimeAndroid.init(context);
+
         //Show notification
         if (!intent.getAction().equalsIgnoreCase("android.intent.action.BOOT_COMPLETED") && show) {
-            NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+            NotificationManager notificationManager =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
             Notification notification = intent.getParcelableExtra(NOTIFICATION);
             int notificationId = intent.getIntExtra(NOTIFICATION_ID_TAG, 0);
             notification.flags |= Notification.FLAG_AUTO_CANCEL;
             notificationManager.notify(notificationId, notification);
         }
+
         //Create next notification
         List<UserVK> userVKList = new ArrayList<>();
         DBHelper.readUserVKTable(context, userVKList);
@@ -76,7 +83,20 @@ public class NotificationPublisher extends BroadcastReceiver {
         Collections.sort(userVKListFull);
         UserVK userVK = userVKListFull.get(0);
 
+        for (UserVK user : userVKListFull) {
+            Log.d("NotificationDebug", "onReceive: "+ user.getName()+" "+String.valueOf(user.isNotify())+" "+user.getBirthDate().toString("dd/MM"));
+        }
+
         scheduleNotification(context, userVK);
+
+        for (int i = 1; i < userVKListFull.size(); i++){
+
+            String firstUserBirthDate = userVK.getBirthDate().toString("dd/MM");
+            String currentUserBirthDate = userVKListFull.get(i).getBirthDate().toString("dd/MM");
+
+            if (firstUserBirthDate.equals(currentUserBirthDate))
+                scheduleNotification(context, userVKListFull.get(i));
+        }
     }
 
     private static int generateRandomId() {
@@ -97,6 +117,8 @@ public class NotificationPublisher extends BroadcastReceiver {
         boolean original = userVK.isNotify();
         String largeIconUrl = userVK.getAvatarURL();
 
+        Log.d("NotificationDebug", "scheduleNotification: "+userVK.getName()+" "+String.valueOf(original)+" "+userVK.getBirthDate().toString("dd/MM"));
+
         builder = new NotificationCompat.Builder(context)
                 .setContentText(userVK.getName())
                 .setAutoCancel(true)
@@ -108,18 +130,19 @@ public class NotificationPublisher extends BroadcastReceiver {
 
         Intent intent = new Intent(context, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        if (original) intent.setAction(DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION);
-        else intent.setAction(DISPLAY_NOTIFICATION_ACTION);
+        if (original) intent.setAction(DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION); else intent.setAction(DISPLAY_NOTIFICATION_ACTION);
         if (original) intent.putExtra("action", DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION);
         intent.putExtra("userId", userVK.getId());
         intent.putExtra("userName", userVK.getName());
         intent.putExtra("userAvatarURL", userVK.getAvatarURL());
+
         PendingIntent activity = PendingIntent.getActivity(context, notificationContentIntentId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         builder.setContentIntent(activity);
 
         Picasso.with(context).load(largeIconUrl).into(new Target() {
             @Override
             public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+
                 builder.setLargeIcon(bitmap);
 
                 Notification notification = builder.build();
@@ -137,6 +160,7 @@ public class NotificationPublisher extends BroadcastReceiver {
 
             @Override
             public void onBitmapFailed(Drawable errorDrawable) {
+
                 Notification notification = builder.build();
 
                 Intent notificationIntent = new Intent(context, NotificationPublisher.class);
@@ -196,29 +220,35 @@ public class NotificationPublisher extends BroadcastReceiver {
     }
 
     public static long dayToMillis(long day) {
+
         LocalDateTime now = new LocalDateTime();
         int hours, minute, second, millisOfSecond;
+
         hours = now.getHourOfDay();
         minute = now.getMinuteOfHour();
         second = now.getSecondOfMinute();
         //millisOfSecond = now.getMillisOfSecond();
         //long millis = day * 86400000 - (3600000 * hours + 60000 * minute + 1000 * second + millisOfSecond);
         long millis = (day * 86400000 - (3600000 * hours + 60000 * minute + 1000 * second) + 5000);
+
         return millis;
+
+    }
+
+    private static void getNotificationPreference(Context context){
+
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        vibration = prefs.getBoolean("notifications_new_message_vibrate", true);
+        show = prefs.getBoolean("notifications_new_message", true);
+        ringtone = prefs.getString("notifications_new_message_ringtone", "content://settings/system/notification_sound");
     }
 
     private static void setAvatar(Bitmap bitmap) {
         avatar = bitmap;
     }
-
     private static void setAvatar(Context context) {
         avatar = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_birthday);;
-    }
-    private static void getNotificationPreference(Context context){
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        vibration = prefs.getBoolean("notifications_new_message_vibrate", true);
-        show = prefs.getBoolean("notifications_new_message", true);
-        ringtone = prefs.getString("notifications_new_message_ringtone", "content://settings/system/notification_sound");
     }
     public static void testScheduleNotification(final Context context, UserVK userVK) {
 
@@ -237,17 +267,16 @@ public class NotificationPublisher extends BroadcastReceiver {
                 .setSmallIcon(R.drawable.ic_birthday)
                 .setSound(Uri.parse(ringtone));
         if (vibration) builder.setDefaults(DEFAULT_VIBRATE);
-        if (original) builder.setContentTitle(context.getString(R.string.str_birthday));
-        else builder.setContentTitle(context.getString(R.string.str_birthday_soon));
+        if (original) builder.setContentTitle(context.getString(R.string.str_birthday));else builder.setContentTitle(context.getString(R.string.str_birthday_soon));
 
         Intent intent = new Intent(context, MainActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        if (original) intent.setAction(DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION);
-        else intent.setAction(DISPLAY_NOTIFICATION_ACTION);
+        if (original) intent.setAction(DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION); else intent.setAction(DISPLAY_NOTIFICATION_ACTION);
         if (original) intent.putExtra("action", DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION);
         intent.putExtra("userId", userVK.getId());
         intent.putExtra("userName", userVK.getName());
         intent.putExtra("userAvatarURL", userVK.getAvatarURL());
+
         PendingIntent activity = PendingIntent.getActivity(context, notificationContentIntentId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         builder.setContentIntent(activity);
 
@@ -255,6 +284,7 @@ public class NotificationPublisher extends BroadcastReceiver {
 
             @Override
             public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+
                 builder.setLargeIcon(bitmap);
 
                 Notification notification = builder.build();
@@ -272,6 +302,7 @@ public class NotificationPublisher extends BroadcastReceiver {
 
             @Override
             public void onBitmapFailed(Drawable errorDrawable) {
+
                 Notification notification = builder.build();
 
                 Intent notificationIntent = new Intent(context, NotificationPublisher.class);

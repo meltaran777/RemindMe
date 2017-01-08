@@ -23,6 +23,7 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -43,18 +44,24 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
 
     @Override
     public RemindViewHollder onCreateViewHolder(ViewGroup parent, int viewType) {
+
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.userlist_item,parent,false);
+
         return  new RemindViewHollder(view);
     }
 
     @Override
     public void onBindViewHolder(RemindViewHollder holder, final int position) {
+
         if(!data.isEmpty()) {
+
             if(data.get(position).getAvatarURL()!=null){
+
                 Picasso.with(view.getContext()).load(data.get(position).getAvatarURL()).resize(IMG_WIDTH, IMG_HIGH).into(holder.imageBtnAvatar);
             }
 
             if(data.get(position).getDateFormat()!=null){
+
                 DateTimeFormatter dateTimeFormat = DateTimeFormat.forPattern(data.get(position).getDateFormat());
                 holder.tvName.setText(data.get(position).getName());
                 holder.tvBdate.setText(view.getContext().getString(R.string.str_birthday_text)+data.get(position).getBirthDate().toString(dateTimeFormat));
@@ -64,6 +71,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
             holder.imageBtnAvatar.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+
                     String userName = data.get(position).getName();
                     String userAvatarURL = data.get(position).getAvatarURL();
                     int userId = data.get(position).getId();
@@ -83,9 +91,6 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-                    if ((data.get(position).getDayToNextBirht() -  data.get(0).getDayToNextBirht()) < 3){
-                        NotificationPublisher.scheduleNotification(view.getContext(), data.get(position));
-                    }
                     UserVK userVK = data.get(position);
                     userVK.setNotify(isChecked);
 
@@ -95,6 +100,14 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
 
                     data.get(position).setNotify(isChecked);
 
+                    if ((data.get(position).getDayToNextBirht() -  data.get(0).getDayToNextBirht()) < 3){
+
+                        List<UserVK> userVKListFull = UserVK.getUserVKListFull(data);
+                        Collections.sort(userVKListFull);
+                        UserVK user = userVKListFull.get(0);
+
+                        NotificationPublisher.scheduleNotification(view.getContext(), user);
+                    }
                     //Toast.makeText(view.getContext(), String.valueOf(data.get(position).getId()), Toast.LENGTH_SHORT).show();
                     //Test Notification
                     //NotificationPublisher.testScheduleNotification(view.getContext(), userVK);
@@ -108,6 +121,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
     }
 
     public static class RemindViewHollder extends RecyclerView.ViewHolder{
+
         CardView cardView;
         TextView tvName;
         TextView tvBdate;
