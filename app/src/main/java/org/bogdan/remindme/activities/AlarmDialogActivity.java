@@ -43,6 +43,7 @@ import java.util.Random;
  * Created by Bodia on 23.11.2016.
  */
 public class AlarmDialogActivity extends AppCompatActivity implements View.OnClickListener {
+
     private static final long DELAY = 10*60*1000;
     public static final String ALARM_DIALOG_ACTION = "org.bogdan.remindme.ALARMDIALOG_DELAY";
 
@@ -59,7 +60,9 @@ public class AlarmDialogActivity extends AppCompatActivity implements View.OnCli
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+
         requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.alarm_dialog_layout);
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -115,11 +118,14 @@ public class AlarmDialogActivity extends AppCompatActivity implements View.OnCli
     }
     @Override
     public void onClick(View v) {
+
         switch (v.getId()){
+
             case R.id.btn_close:
                 mp.stop();
                 finish();
                 break;
+
             case R.id.btn_set_aside:
                 mp.stop();
 

@@ -51,7 +51,7 @@ public class AlarmReceiver extends WakefulBroadcastReceiver {
             Intent alarmDialogIntent = new Intent(context, AlarmDialogActivity.class);
             alarmDialogIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             alarmDialogIntent.putExtra("description", intent.getStringExtra("description"));
-            alarmDialogIntent.putExtra("ringtone", intent.getStringExtra("ringtone"));
+            alarmDialogIntent.putExtra("notificationSound", intent.getStringExtra("notificationSound"));
             alarmDialogIntent.putExtra("hour", intent.getIntExtra("hour",0));
             alarmDialogIntent.putExtra("minute", intent.getIntExtra("minute",0));
             context.startActivity(alarmDialogIntent);

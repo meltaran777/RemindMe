@@ -7,13 +7,10 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.SystemClock;
-import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
@@ -46,16 +43,15 @@ public class NotificationPublisher extends BroadcastReceiver {
     public static final String DISPLAY_NOTIFICATION_ACTION = "org.bogdan.remindme.DISPLAY_NOTIFICATION";
     public static final String DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION = "org.bogdan.remindme.HAPPY_BIRTHDAY_DIALOG_SHOW";
 
-    public static int NOTIFICATION_ID = 999;
     public static String NOTIFICATION_ID_TAG = "notification_id";
     public static String NOTIFICATION = "notification";
 
-    static String ringtone = "content://settings/system/notification_sound";
+    static String notificationSound = "content://settings/system/notification_sound";
     static boolean vibration = true;
-    static Bitmap avatar;
 
     @Override
     public void onReceive(final Context context, Intent intent) {
+
         JodaTimeAndroid.init(context);
 
         //Show notification
@@ -80,7 +76,7 @@ public class NotificationPublisher extends BroadcastReceiver {
         UserVK userVK = userVKListFull.get(0);
 
         for (UserVK user : userVKListFull) {
-            Log.d("NotificationDebug", "onReceive: "+ user.getName()+" "+String.valueOf(user.isNotify())+" "+user.getBirthDate().toString("dd/MM"));
+            //Log.d("NotificationDebug", "onReceive: "+ user.getName()+" "+String.valueOf(user.isNotify())+" "+user.getBirthDate().toString("dd/MM"));
         }
 
         scheduleNotification(context, userVK);
@@ -102,6 +98,7 @@ public class NotificationPublisher extends BroadcastReceiver {
     }
 
     public static void scheduleNotification(final Context context, UserVK userVK) {
+
         final NotificationCompat.Builder builder;
 
         final long delay = dayToMillis(userVK.getDayToNextBirht());
@@ -116,7 +113,7 @@ public class NotificationPublisher extends BroadcastReceiver {
                 .setContentText(userVK.getName())
                 .setAutoCancel(true)
                 .setSmallIcon(R.drawable.ic_birthday)
-                .setSound(Uri.parse(ringtone));
+                .setSound(Uri.parse(notificationSound));
         if (vibration) builder.setDefaults(DEFAULT_VIBRATE);
         if (original) builder.setContentTitle(context.getString(R.string.str_birthday));
         else builder.setContentTitle(context.getString(R.string.str_birthday_soon));
@@ -197,14 +194,15 @@ public class NotificationPublisher extends BroadcastReceiver {
                         .setSmallIcon(R.drawable.ic_alarm_notif)
                         .setContentTitle("Alarm(Set aside) " + strTime)
                         .setContentText("Push to cancel alarm")
-                        .setSound(Uri.parse(ringtone))
+                        .setSound(Uri.parse(notificationSound))
                         .setAutoCancel(true)
                         .setContentIntent(actionPendingIntent);
         if (vibration) notificationBuilder.setDefaults(DEFAULT_VIBRATE);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         NotificationManagerCompat.from(context).cancelAll();
-            notificationManager.notify(notificationId, notificationBuilder.build());
+
+        notificationManager.notify(notificationId, notificationBuilder.build());
 
     }
 
@@ -216,23 +214,14 @@ public class NotificationPublisher extends BroadcastReceiver {
         hours = now.getHourOfDay();
         minute = now.getMinuteOfHour();
         second = now.getSecondOfMinute();
-        //millisOfSecond = now.getMillisOfSecond();
-        //long millis = day * 86400000 - (3600000 * hours + 60000 * minute + 1000 * second + millisOfSecond);
+
         long millis = (day * 86400000 - (3600000 * hours + 60000 * minute + 1000 * second) + 5000);
 
         return millis;
-
     }
 
-
-
-    private static void setAvatar(Bitmap bitmap) {
-        avatar = bitmap;
-    }
-    private static void setAvatar(Context context) {
-        avatar = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_birthday);;
-    }
     public static void testScheduleNotification(final Context context, UserVK userVK) {
+
         final NotificationCompat.Builder builder;
 
         boolean original = userVK.isNotify();
@@ -244,7 +233,7 @@ public class NotificationPublisher extends BroadcastReceiver {
                 .setContentText(userVK.getName())
                 .setAutoCancel(true)
                 .setSmallIcon(R.drawable.ic_birthday)
-                .setSound(Uri.parse(ringtone));
+                .setSound(Uri.parse(notificationSound));
         if (vibration) builder.setDefaults(DEFAULT_VIBRATE);
         if (original) builder.setContentTitle(context.getString(R.string.str_birthday));else builder.setContentTitle(context.getString(R.string.str_birthday_soon));
 
