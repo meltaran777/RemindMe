@@ -236,7 +236,7 @@ public class AlarmClock implements Comparable<AlarmClock> {
                 alarmIntent.putExtra("minute", alarmClock.getMinute());
                 PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-                Log.d("AlarmDebug", "createAlarm: " + alarmClock.getDescription() + alarmClock.getHour() + ":" + alarmClock.getMinute());
+                Log.d("DebugAlarm", "createAlarm: " + alarmClock.getDescription() + alarmClock.getHour() + ":" + alarmClock.getMinute());
 
                 am.set(AlarmManager.RTC_WAKEUP, alarmClock.getAlarmTimeInMillis(), alarmPendingIntent);
 
@@ -294,7 +294,7 @@ public class AlarmClock implements Comparable<AlarmClock> {
                 alarmIntent.putExtra("minute", alarmClock.getMinute());
                 PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-                Log.d("AlarmDebug", "createAlarm: " + alarmClock.getDescription() + alarmClock.getHour() + ":" + alarmClock.getMinute());
+                Log.d("DebugReboot", "createAlarm: " + alarmClock.getDescription() + alarmClock.getHour() + ":" + alarmClock.getMinute());
 
                 am.set(AlarmManager.RTC_WAKEUP, alarmClock.getAlarmTimeInMillis(), alarmPendingIntent);
 

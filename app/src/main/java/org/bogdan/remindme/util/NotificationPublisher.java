@@ -55,8 +55,14 @@ public class NotificationPublisher extends BroadcastReceiver {
         JodaTimeAndroid.init(context);
 
         //Show notification
-        if (!intent.getAction().equalsIgnoreCase("android.intent.action.BOOT_COMPLETED")) {
+        boolean show = true;
 
+        if (intent.getAction().equalsIgnoreCase("com.htc.intent.action.QUICKBOOT_POWERON")
+                || intent.getAction().equalsIgnoreCase("android.intent.action.QUICKBOOT_POWERON")
+                || intent.getAction().equalsIgnoreCase("android.intent.action.BOOT_COMPLETED"))
+            show = false;
+
+        if (show){
             NotificationManager notificationManager =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -65,6 +71,7 @@ public class NotificationPublisher extends BroadcastReceiver {
             notification.flags |= Notification.FLAG_AUTO_CANCEL;
             notificationManager.notify(notificationId, notification);
         }
+
 
         //Create next notification
         List<UserVK> userVKList = new ArrayList<>();
@@ -107,7 +114,7 @@ public class NotificationPublisher extends BroadcastReceiver {
         boolean original = userVK.isNotify();
         String largeIconUrl = userVK.getAvatarURL();
 
-        Log.d("NotificationDebug", "scheduleNotification: "+userVK.getName()+" "+String.valueOf(original)+" "+userVK.getBirthDate().toString("dd/MM"));
+        Log.d("DebugReboot", "scheduleNotification: "+userVK.getName()+" "+String.valueOf(original)+" "+userVK.getBirthDate().toString("dd/MM"));
 
         builder = new NotificationCompat.Builder(context)
                 .setContentText(userVK.getName())
