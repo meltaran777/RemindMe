@@ -130,6 +130,7 @@ public class NotificationPublisher extends BroadcastReceiver {
         builder.setContentIntent(activity);
 
         Picasso.with(context).load(largeIconUrl).into(new Target() {
+
             @Override
             public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
 

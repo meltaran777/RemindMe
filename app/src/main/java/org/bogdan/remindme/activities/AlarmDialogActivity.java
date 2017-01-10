@@ -53,8 +53,8 @@ public class AlarmDialogActivity extends AppCompatActivity implements View.OnCli
     Button btnSetAside;
 
     MediaPlayer mp;
-    String ringtone;
-    String desc;
+    String ringtone = "";
+    String desc = "";
     int hour;
     int minute;
 
@@ -81,6 +81,15 @@ public class AlarmDialogActivity extends AppCompatActivity implements View.OnCli
 
         btnClose.setOnClickListener(this);
         btnSetAside.setOnClickListener(this);
+
+        Bundle bundle = getIntent().getExtras();
+        if (bundle != null)
+            Log.d("AlarmDebug", "onCreate: "
+                    + bundle.getString("description")
+                    + bundle.getString("ringtone")
+                    + bundle.getInt("hour") + ":"
+                    + bundle.getInt("minute"));
+        else Log.d("AlarmDebug", "onCreate: "+"bundel is  null");
 
         ringtone = getIntent().getStringExtra("ringtone");
         desc = getIntent().getStringExtra("description");
@@ -133,10 +142,10 @@ public class AlarmDialogActivity extends AppCompatActivity implements View.OnCli
 
                 Intent alarmIntent = new Intent(getApplicationContext(), AlarmReceiver.class);
                 alarmIntent.setAction(ALARM_DIALOG_ACTION);
-                alarmIntent.putExtra("description",desc);
-                alarmIntent.putExtra("ringtone",ringtone);
-                alarmIntent.putExtra("hour",hour);
-                alarmIntent.putExtra("minute",minute);
+                alarmIntent.putExtra("description", desc);
+                alarmIntent.putExtra("ringtone", ringtone);
+                alarmIntent.putExtra("hour", hour);
+                alarmIntent.putExtra("minute", minute);
 
                 int id = new Random().nextInt();
 

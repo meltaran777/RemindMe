@@ -220,17 +220,23 @@ public class AlarmClock implements Comparable<AlarmClock> {
     }
 
     public static boolean createAlarm(Context context ,AlarmManager am, List<AlarmClock> alarmList){
+
         List<AlarmClock> alarmListFull = getAlarmListFull(alarmList);
         Collections.sort(alarmListFull);
+
         for (AlarmClock alarmClock : alarmListFull) {
+
             if (alarmClock.isActive()) {
+
                 Intent alarmIntent = new Intent(context, AlarmReceiver.class);
                 alarmIntent.setAction(ALARM_CLOCK_CREATE_ACTION);
-                alarmIntent.putExtra("description",alarmClock.getDescription());
-                alarmIntent.putExtra("ringtone",alarmClock.getRingtoneURI());
-                alarmIntent.putExtra("hour",alarmClock.getHour());
-                alarmIntent.putExtra("minute",alarmClock.getMinute());
+                alarmIntent.putExtra("description", alarmClock.getDescription());
+                alarmIntent.putExtra("ringtone", alarmClock.getRingtoneURI());
+                alarmIntent.putExtra("hour", alarmClock.getHour());
+                alarmIntent.putExtra("minute", alarmClock.getMinute());
                 PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+                Log.d("AlarmDebug", "createAlarm: " + alarmClock.getDescription() + alarmClock.getHour() + ":" + alarmClock.getMinute());
 
                 am.set(AlarmManager.RTC_WAKEUP, alarmClock.getAlarmTimeInMillis(), alarmPendingIntent);
 
@@ -241,19 +247,29 @@ public class AlarmClock implements Comparable<AlarmClock> {
     }
 
     public static boolean createAlarm(Context context , Intent intent, AlarmManager am, List<AlarmClock> alarmList){
+
         List<AlarmClock> alarmListActive = new ArrayList<>();
         List<AlarmClock> alarmListFull = getAlarmListFull(alarmList);
         Collections.sort(alarmListFull);
+
         for (AlarmClock alarmClock : alarmListFull) {
             if (alarmClock.isActive() && alarmClock.isSingle()) alarmListActive.add(alarmClock);
         }
+
         Collections.sort(alarmListActive);
+
         for (AlarmClock alarmClock : alarmListFull) {
+
             if (alarmClock.isActive()) {
+
                 //When call from receiver off single alarm(Update DB data)
+
                     if (alarmClock.isSingle()){
+
                         if (intent.getAction() != null)
+
                             if (intent.getAction().equalsIgnoreCase(ALARM_CLOCK_CREATE_ACTION)) {
+
                                 AlarmClock alarmClockActive = alarmListActive.get(alarmListActive.size() - 1);
                                 alarmClockActive.setActive(false);
 
@@ -269,13 +285,16 @@ public class AlarmClock implements Comparable<AlarmClock> {
                                 DBHelper.getDatabase(context).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[]{strAlarmIdDb});
                             }
                     }
+
                 Intent alarmIntent = new Intent(context, AlarmReceiver.class);
                 alarmIntent.setAction(ALARM_CLOCK_CREATE_ACTION);
-                alarmIntent.putExtra("description",alarmClock.getDescription());
-                alarmIntent.putExtra("ringtone",alarmClock.getRingtoneURI());
-                alarmIntent.putExtra("hour",alarmClock.getHour());
-                alarmIntent.putExtra("minute",alarmClock.getMinute());
+                alarmIntent.putExtra("description", alarmClock.getDescription());
+                alarmIntent.putExtra("ringtone", alarmClock.getRingtoneURI());
+                alarmIntent.putExtra("hour", alarmClock.getHour());
+                alarmIntent.putExtra("minute", alarmClock.getMinute());
                 PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+                Log.d("AlarmDebug", "createAlarm: " + alarmClock.getDescription() + alarmClock.getHour() + ":" + alarmClock.getMinute());
 
                 am.set(AlarmManager.RTC_WAKEUP, alarmClock.getAlarmTimeInMillis(), alarmPendingIntent);
 
