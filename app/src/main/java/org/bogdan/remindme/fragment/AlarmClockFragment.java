@@ -28,6 +28,7 @@ import net.danlew.android.joda.JodaTimeAndroid;
 
 import org.bogdan.remindme.R;
 import org.bogdan.remindme.activities.AddAlarmActivity;
+import org.bogdan.remindme.activities.MainActivity;
 import org.bogdan.remindme.content.AlarmClock;
 import org.bogdan.remindme.database.DBHelper;
 import org.joda.time.DateTime;
@@ -46,7 +47,7 @@ import java.util.List;
  * Created by Bodia on 28.10.2016.
  */
 public class AlarmClockFragment extends AbstractTabFragment
-        implements View.OnClickListener,AdapterView.OnItemClickListener,AdapterView.OnItemLongClickListener {
+        implements View.OnClickListener, AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener {
 
     private static final int LAYOUT = R.layout.alarm_clock_fragment_layout;
     private static final String DEBUG_TAG = "DebugAlarmFragment";
@@ -83,10 +84,10 @@ public class AlarmClockFragment extends AbstractTabFragment
 
         view = inflater.inflate(LAYOUT, container, false);
 
-        btnAdd = (FloatingActionButton) view.findViewById(R.id.btn_add_alarm);
+        //btnAdd = (FloatingActionButton) view.findViewById(R.id.btn_add_alarm);
         alarmList = (ListView) view.findViewById(R.id.listView_alarmList);
 
-        btnAdd.setOnClickListener(this);
+        //btnAdd.setOnClickListener(this);
 
         alarmListSetAdapter();
         alarmList.setOnItemClickListener(this);
@@ -107,17 +108,14 @@ public class AlarmClockFragment extends AbstractTabFragment
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-
         super.onActivityCreated(savedInstanceState);
 
         if (AlarmClock.getAlarmList().isEmpty()) {
 
             DBHelper.readTableAlarms(getContext(), AlarmClock.getAlarmList());
-
             AlarmClock.getAlarmArrayMap();
 
             if (AlarmClock.getAlarmList().isEmpty()){
-
                 Toast.makeText(getContext(), getResources().getString(R.string.txtNoAlarm), Toast.LENGTH_LONG).show();
             }
         }
@@ -188,15 +186,12 @@ public class AlarmClockFragment extends AbstractTabFragment
 
     @Override
     public void onClick(View v) {
-
         switch (v.getId()) {
 
             case R.id.btn_add_alarm:
-
                 Intent alarmAddIntent = new Intent(getContext(), AddAlarmActivity.class);
                 alarmAddIntent.setAction(CREATE_ALARM_ACTION);
                 startActivityForResult(alarmAddIntent, 1);
-
                 break;
         }
     }

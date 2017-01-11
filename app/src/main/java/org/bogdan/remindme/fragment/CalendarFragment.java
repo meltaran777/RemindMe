@@ -35,17 +35,21 @@ import java.util.List;
  * Created by Bodia on 28.10.2016.
  */
 public class CalendarFragment extends AbstractTabFragment{
+
     private static final int LAYOUT=R.layout.calendar_fragment_layout;
 
-    private static final int IMG_WIDTH = 150;
-    private static final int IMG_HIGHT = 150;
+    private static final int IMG_WIDTH = 250;
+    private static final int IMG_HIGHT = 250;
     private static final int DOT_RADIUS = 13;
 
     private static String title;
 
     public static CalendarFragment getInstance(Context context){
+
         Bundle args=new Bundle();
+
         CalendarFragment fragment=new CalendarFragment();
+
         fragment.setArguments(args);
         fragment.setContext(context);
         fragment.setTitle(context.getString(R.string.tab_item_Calendar));
@@ -58,6 +62,7 @@ public class CalendarFragment extends AbstractTabFragment{
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
         view = inflater.inflate(LAYOUT, container, false);
 
         materialCalendarView = (MaterialCalendarView) view.findViewById(R.id.materialCalendarView);
@@ -109,6 +114,7 @@ public class CalendarFragment extends AbstractTabFragment{
     }
 
     private void addDecorator() {
+
         List<CalendarDay> calendarDays = new ArrayList<CalendarDay>();
         Calendar calendar = Calendar.getInstance();
 
@@ -127,6 +133,7 @@ public class CalendarFragment extends AbstractTabFragment{
             CalendarDay calendarDay = CalendarDay.from(calendar);
             calendarDays.add(calendarDay);
         }
+
         materialCalendarView.addDecorators(new EventDecorator(Color.RED, calendarDays));
         materialCalendarView.addDecorators(new EventDecorator(Color.GREEN, today));
     }

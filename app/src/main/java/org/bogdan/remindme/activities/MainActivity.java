@@ -5,6 +5,9 @@ import android.content.pm.ActivityInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
@@ -15,7 +18,9 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKCallback;
@@ -36,6 +41,7 @@ import org.bogdan.remindme.R;
 import org.bogdan.remindme.content.UserVK;
 import org.bogdan.remindme.adapter.TabsFragmentAdapter;
 import org.bogdan.remindme.database.DBHelper;
+import org.bogdan.remindme.fragment.AlarmClockFragment;
 import org.bogdan.remindme.fragment.BirhtdayFragment;
 import org.bogdan.remindme.util.NotificationPublisher;
 import org.joda.time.DateTime;
@@ -53,39 +59,60 @@ import rx.functions.Func1;
  * Created by Bodia on 09.06.2016.
  */
 public class MainActivity extends AppCompatActivity {
+
     private static final int TAB_ONE=0;
     private static final int TAB_TWO=1;
     private static final int TAB_THREE=2;
-    public static final String APP_TAG = "RemindMe" ;
-    private static final String STUDY_RX_TAG = "StudyRx";
+
+    public static final String APP_TAG = "RemindMeDebug" ;
 
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private NavigationView navigationView;
+    private FloatingActionButton fab;
 
     private static boolean Vklogin = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setTheme(R.style.AppDefault);
         setContentView(R.layout.main_layout);
+
         JodaTimeAndroid.init(this);
 
+        fab = (FloatingActionButton) findViewById(R.id.btn_add_alarm);
+
         vkLogin();
+
         initToolbar();
         initTabs();
-        initNavigationView();
+        //initNavigationView();
+
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                AlarmClockFragment instanceFragment =
+                        (AlarmClockFragment) getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.ViewPager + ":" + "0");
+
+                fab.setOnClickListener(instanceFragment);
+            }
+        },1000);
+
         showHappyBirthdayDialog();
     }
 
     private void showHappyBirthdayDialog() {
-        //if (getIntent().getAction() != null)
-          //  if (getIntent().getAction() == NotificationPublisher.DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION) {
+
         Bundle bundle = getIntent().getExtras();
+
         if (bundle !=null) {
+
             String action = bundle.getString("action","");
             if (action.equalsIgnoreCase(NotificationPublisher.DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION)) {
             String userName = getIntent().getStringExtra("userName");
@@ -100,45 +127,6 @@ public class MainActivity extends AppCompatActivity {
             startActivity(happyBirthdayDialogIntent);
             }
         }
-       //     }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        //studyRx();
-    }
-
-    private void studyRx() {
-        Observable.just("Hello World")
-                .map(new Func1<String, String>() {
-                    @Override
-                    public String call(String s) {
-                        return s + " -Dan";
-                    }
-                })
-                .subscribe(new Action1<String>() {
-                    @Override
-                    public void call(String s) {
-                        Log.d(STUDY_RX_TAG, "call: "+s);
-                    }
-                });
-
-        Observable.just("Hello World")
-                .flatMap(new Func1<String, Observable<String>>() {
-                    @Override
-                    public Observable<String> call(String s) {
-                        List<String> urls = new ArrayList<String>();
-                        urls.add(s);
-                        return Observable.from(urls);
-                    }
-                })
-                .subscribe(new Action1<String>() {
-                    @Override
-                    public void call(String url) {
-                        Log.d(STUDY_RX_TAG, "call: "+url);
-                    }
-                });
     }
 
     private void initToolbar() {
@@ -167,6 +155,29 @@ public class MainActivity extends AppCompatActivity {
 
         TabsFragmentAdapter adapter = new TabsFragmentAdapter(this,getSupportFragmentManager());
         viewPager.setAdapter(adapter);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                Log.d(APP_TAG, "onPageSelected: " + String.valueOf(position));
+
+                if (position != TAB_ONE) fab.setVisibility(FloatingActionButton.INVISIBLE);
+                else {
+                    fab.setVisibility(FloatingActionButton.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+
         tabLayout.setupWithViewPager(viewPager);
     }
 
@@ -182,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        navigationView = (NavigationView) findViewById(R.id.navigation);
+        /*navigationView = (NavigationView) findViewById(R.id.navigation);
 
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -193,37 +204,33 @@ public class MainActivity extends AppCompatActivity {
                 switch (item.getItemId()){
 
                     case R.id.menu_item_alarm_clock:
-
                         showNotificationTab(TAB_ONE);
-
                         break;
 
                     case R.id.menu_item_birthday:
-
                         showNotificationTab(TAB_TWO);
-
                         break;
 
                     case R.id.menu_item_calendar:
-
                         showNotificationTab(TAB_THREE);
-
                         break;
 
                     case R.id.menu_item_settings:
-
                         Intent settingsIntent = new Intent(getApplicationContext(),SettingsActivity.class);
                         startActivity(settingsIntent);
-
                         break;
                 }
                 return true;
             }
         });
+        */
     }
+
     private String[] vkScope = new String[]{VKScope.MESSAGES, VKScope.FRIENDS, VKScope.WALL};
 
-    private VKRequest getVKFriendsListRequest = VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
+    private VKRequest getVKFriendsListRequest
+            = VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
+
     private void vkLogin() {
         //String[] fingetprints = VKUtil.getCertificateFingerprint(this,this.getPackageName());
         if (isInternetAvailable()) {
@@ -238,6 +245,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
         if(!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
             @Override
             public void onResult(VKAccessToken res) {
@@ -318,8 +326,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createNotification(){
+
         List<UserVK> userVKList=UserVK.getUsersList();
+
         if(!userVKList.isEmpty()) {
+
             Log.d("NotificationDebug", "Notification created");
 
             List<UserVK> userVKListFull = UserVK.getUserVKListFull(userVKList);
@@ -327,6 +338,7 @@ public class MainActivity extends AppCompatActivity {
             UserVK userVK = userVKListFull.get(0);
 
             NotificationPublisher.scheduleNotification(getApplicationContext(), userVK);
+
         }else Log.d("NotificationDebug", "Create notification fail,empty list");
 
     }

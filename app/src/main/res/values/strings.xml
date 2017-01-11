@@ -149,5 +149,6 @@
     <string name="Selebrate">Happy Birthday</string>
     <string name="happy_birthday">Happy Birthday</string>
     <string name="txtNoAlarm">No alarm clock,add someone</string>
+    <string name="message_send">Message send</string>
 
 </resources>

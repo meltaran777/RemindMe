@@ -19,6 +19,7 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.vk.sdk.api.VKApiConst;
@@ -29,7 +30,9 @@ import com.vk.sdk.api.VKResponse;
 
 import org.bogdan.remindme.R;
 
-public class HappyBirthdayDialogActivity extends AppCompatActivity implements View.OnClickListener, TextSwitcher.ViewFactory, View.OnTouchListener {
+public class HappyBirthdayDialogActivity extends AppCompatActivity
+        implements View.OnClickListener, TextSwitcher.ViewFactory, View.OnTouchListener {
+
     private static final float MIN_DISTANCE = 150;
     private static final int OPERATION_TAKE_NEXT = 1;
     private static final int OPERATION_TAKE_PREVIOUS = 0;
@@ -59,9 +62,11 @@ public class HappyBirthdayDialogActivity extends AppCompatActivity implements Vi
     String[] favouriteText;
     String[] manText;
     String[] girlText;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_happy_birthday_dialog_layout);
 
@@ -95,6 +100,7 @@ public class HappyBirthdayDialogActivity extends AppCompatActivity implements Vi
         favouriteText = getResources().getStringArray(R.array.happyBirthdayFavouriteArray);
         girlText = getResources().getStringArray(R.array.happyBirthdayGirlArray);
         manText = getResources().getStringArray(R.array.happyBirthdayManArray);
+
         updateTextView(OPERATION_TAKE_FIRST);
     }
 
@@ -111,11 +117,17 @@ public class HappyBirthdayDialogActivity extends AppCompatActivity implements Vi
     }
 
     private void spinnerSetAdapter() {
+
         String[] messageCategoryName = getResources().getStringArray(R.array.messageCategoryArray);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, messageCategoryName);
+
+        ArrayAdapter<String> adapter
+                = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, messageCategoryName);
+
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
         messageCategorySpinner.setAdapter(adapter);
         messageCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 messageCategoryIndex = position;
@@ -132,17 +144,22 @@ public class HappyBirthdayDialogActivity extends AppCompatActivity implements Vi
 
     @Override
     public void onClick(View v) {
+
         switch (v.getId()){
+
             case R.id.btn_close:
                 finish();
                 break;
+
             case R.id.btn_happy_birthday:
                 sendHappyBirthdayMessage();
                 finish();
                 break;
+
             case R.id.imageButtonPrevious:
                 updateTextView(OPERATION_TAKE_PREVIOUS);
                 break;
+
             case R.id.imageButtonNext:
                 updateTextView(OPERATION_TAKE_NEXT);
                 break;
@@ -150,11 +167,15 @@ public class HappyBirthdayDialogActivity extends AppCompatActivity implements Vi
     }
 
     private void sendHappyBirthdayMessage() {
-        VKRequest sendMassage = new VKRequest("messages.send", VKParameters.from(VKApiConst.USER_ID, userId, VKApiConst.MESSAGE, currentMessage));
+
+        VKRequest sendMassage =
+                new VKRequest("messages.send", VKParameters.from(VKApiConst.USER_ID, userId, VKApiConst.MESSAGE, currentMessage));
+
         sendMassage.executeWithListener(new VKRequest.VKRequestListener() {
             @Override
             public void onComplete(VKResponse response) {
                 super.onComplete(response);
+                Toast.makeText(getApplicationContext(), getApplicationContext().getString(R.string.message_send), Toast.LENGTH_SHORT).show();
                 Log.i("VKInfo", "onComplete: MessageSend");
             }
 
@@ -174,26 +195,34 @@ public class HappyBirthdayDialogActivity extends AppCompatActivity implements Vi
         textView.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER);
         textView.setTextSize(20);
         textView.setTextColor(Color.BLACK);
+
         return textView;
     }
     private void updateTextView(int operationType) {
+
         String selectedArray[];
+
         switch (messageCategoryIndex){
+
             case 0:
                 selectedArray = friendsText;
                 break;
             case 1:
                 selectedArray = darlingText;
                 break;
+
             case 2:
                 selectedArray = favouriteText;
                 break;
+
             case 3:
                 selectedArray = manText;
                 break;
+
             case 4:
                 selectedArray = girlText;
                 break;
+
             default:
                 selectedArray = friendsText;
         }
