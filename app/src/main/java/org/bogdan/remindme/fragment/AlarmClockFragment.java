@@ -84,10 +84,7 @@ public class AlarmClockFragment extends AbstractTabFragment
 
         view = inflater.inflate(LAYOUT, container, false);
 
-        //btnAdd = (FloatingActionButton) view.findViewById(R.id.btn_add_alarm);
         alarmList = (ListView) view.findViewById(R.id.listView_alarmList);
-
-        //btnAdd.setOnClickListener(this);
 
         alarmListSetAdapter();
         alarmList.setOnItemClickListener(this);
@@ -119,6 +116,9 @@ public class AlarmClockFragment extends AbstractTabFragment
                 Toast.makeText(getContext(), getResources().getString(R.string.txtNoAlarm), Toast.LENGTH_LONG).show();
             }
         }
+
+        btnAdd = (FloatingActionButton) getActivity().findViewById(R.id.btn_add_alarm);
+        btnAdd.setOnClickListener(this);
     }
 
     @Override
@@ -157,7 +157,6 @@ public class AlarmClockFragment extends AbstractTabFragment
             }
 
             ContentValues contentValues = new ContentValues();
-            //DBHelper.putAlarmValue(getContext(), contentValues, descString, ringtoneURI , active, daysArray, hour, minute);
             DBHelper.putAlarmValue(getContext(), contentValues, alarmClock);
 
             if (alarmId >= 0) {
@@ -165,7 +164,6 @@ public class AlarmClockFragment extends AbstractTabFragment
                 //update record in DB
                 int alarmIdDB = alarmId + 1;
                 String strAlarmIdDb = String.valueOf(alarmIdDB);
-                //DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM + "=?", new String[] {strAlarmIdDb} );
                 DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[]{strAlarmIdDb});
 
             } else {
@@ -175,7 +173,6 @@ public class AlarmClockFragment extends AbstractTabFragment
             }
 
             new CreateAlarmTask().execute();
-            //AlarmClock.createAlarm(getContext(), getAlarmMgr(), AlarmClock.getAlarmList(), false);
             if (alarmClock.isActive()) showAlarmTimeToast(alarmClock);
         }
 

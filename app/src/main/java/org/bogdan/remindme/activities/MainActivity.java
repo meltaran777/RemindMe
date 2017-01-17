@@ -6,7 +6,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -18,9 +17,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKCallback;
@@ -47,22 +44,17 @@ import org.bogdan.remindme.util.NotificationPublisher;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import rx.Observable;
-import rx.functions.Action1;
-import rx.functions.Func1;
 
 /**
  * Created by Bodia on 09.06.2016.
  */
 public class MainActivity extends AppCompatActivity {
 
-    private static final int TAB_ONE=0;
-    private static final int TAB_TWO=1;
-    private static final int TAB_THREE=2;
+    private static final int TAB_ALARM_CLOCK =0;
+    private static final int TAB_BIRTHDAY =1;
+    private static final int TAB_CALENDAR =2;
 
     public static final String APP_TAG = "RemindMeDebug" ;
 
@@ -73,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private FloatingActionButton fab;
 
-    private static boolean Vklogin = false;
+    private static boolean VkLogin = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,24 +77,10 @@ public class MainActivity extends AppCompatActivity {
 
         JodaTimeAndroid.init(this);
 
-        fab = (FloatingActionButton) findViewById(R.id.btn_add_alarm);
-
         vkLogin();
 
         initToolbar();
         initTabs();
-        //initNavigationView();
-
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                AlarmClockFragment instanceFragment =
-                        (AlarmClockFragment) getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.ViewPager + ":" + "0");
-
-                fab.setOnClickListener(instanceFragment);
-            }
-        },1000);
 
         showHappyBirthdayDialog();
     }
@@ -114,12 +92,15 @@ public class MainActivity extends AppCompatActivity {
         if (bundle !=null) {
 
             String action = bundle.getString("action","");
+
             if (action.equalsIgnoreCase(NotificationPublisher.DISPLAY_HAPPY_BIRTHDAY_DIALOG_ACTION)) {
+
             String userName = getIntent().getStringExtra("userName");
             String userAvatarURL = getIntent().getStringExtra("userAvatarURL");
             int userId = getIntent().getIntExtra("userId", 0);
 
             Intent happyBirthdayDialogIntent = new Intent(getApplicationContext(), HappyBirthdayDialogActivity.class);
+
             happyBirthdayDialogIntent.putExtra("userId", userId);
             happyBirthdayDialogIntent.putExtra("userName", userName);
             happyBirthdayDialogIntent.putExtra("userAvatarURL", userAvatarURL);
@@ -155,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
         TabsFragmentAdapter adapter = new TabsFragmentAdapter(this,getSupportFragmentManager());
         viewPager.setAdapter(adapter);
+
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -165,7 +147,8 @@ public class MainActivity extends AppCompatActivity {
             public void onPageSelected(int position) {
                 Log.d(APP_TAG, "onPageSelected: " + String.valueOf(position));
 
-                if (position != TAB_ONE) fab.setVisibility(FloatingActionButton.INVISIBLE);
+                if (position != TAB_ALARM_CLOCK)
+                    fab.setVisibility(FloatingActionButton.INVISIBLE);
                 else {
                     fab.setVisibility(FloatingActionButton.VISIBLE);
                 }
@@ -176,7 +159,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
 
         tabLayout.setupWithViewPager(viewPager);
     }
@@ -204,15 +186,15 @@ public class MainActivity extends AppCompatActivity {
                 switch (item.getItemId()){
 
                     case R.id.menu_item_alarm_clock:
-                        showNotificationTab(TAB_ONE);
+                        showNotificationTab(TAB_ALARM_CLOCK);
                         break;
 
                     case R.id.menu_item_birthday:
-                        showNotificationTab(TAB_TWO);
+                        showNotificationTab(TAB_BIRTHDAY);
                         break;
 
                     case R.id.menu_item_calendar:
-                        showNotificationTab(TAB_THREE);
+                        showNotificationTab(TAB_CALENDAR);
                         break;
 
                     case R.id.menu_item_settings:
@@ -298,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
                 Collections.sort(UserVK.getUsersList());
                 createNotification();
 
-                BirhtdayFragment instanceFragment = (BirhtdayFragment) getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.ViewPager + ":" + "1");
+                BirhtdayFragment instanceFragment = (BirhtdayFragment) getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.ViewPager + ":" + TAB_BIRTHDAY);
                 if (instanceFragment != null) {
                         instanceFragment.getAdapter().notifyDataSetChanged();
                         if (!UserVK.getUsersList().isEmpty()) instanceFragment.getTvError().setVisibility(TextView.INVISIBLE);
@@ -350,12 +332,12 @@ public class MainActivity extends AppCompatActivity {
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
-    public static boolean isVklogin() {
-        return Vklogin;
+    public static boolean isVkLogin() {
+        return VkLogin;
     }
 
     public void setVklogin(boolean vklogin) {
-        Vklogin = vklogin;
+        VkLogin = vklogin;
     }
 
 }
