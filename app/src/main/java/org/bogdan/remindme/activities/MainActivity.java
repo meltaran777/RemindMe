@@ -75,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
         setTheme(R.style.AppDefault);
         setContentView(R.layout.main_layout);
 
+        fab = (FloatingActionButton) findViewById(R.id.btn_add_alarm);
+
         JodaTimeAndroid.init(this);
 
         vkLogin();
@@ -210,8 +212,8 @@ public class MainActivity extends AppCompatActivity {
 
     private String[] vkScope = new String[]{VKScope.MESSAGES, VKScope.FRIENDS, VKScope.WALL};
 
-    private VKRequest getVKFriendsListRequest
-            = VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
+    private VKRequest getVKFriendsListRequest =
+            VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
 
     private void vkLogin() {
         //String[] fingetprints = VKUtil.getCertificateFingerprint(this,this.getPackageName());
@@ -280,10 +282,15 @@ public class MainActivity extends AppCompatActivity {
                 Collections.sort(UserVK.getUsersList());
                 createNotification();
 
-                BirhtdayFragment instanceFragment = (BirhtdayFragment) getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.ViewPager + ":" + TAB_BIRTHDAY);
+                BirhtdayFragment instanceFragment =
+                        (BirhtdayFragment) getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.ViewPager + ":" + TAB_BIRTHDAY);
+
                 if (instanceFragment != null) {
+
                         instanceFragment.getAdapter().notifyDataSetChanged();
-                        if (!UserVK.getUsersList().isEmpty()) instanceFragment.getTvError().setVisibility(TextView.INVISIBLE);
+
+                        if (!UserVK.getUsersList().isEmpty())
+                            instanceFragment.getTvError().setVisibility(TextView.INVISIBLE);
                     }
             }
 

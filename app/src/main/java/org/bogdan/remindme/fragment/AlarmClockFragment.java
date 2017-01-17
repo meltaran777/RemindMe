@@ -123,7 +123,6 @@ public class AlarmClockFragment extends AbstractTabFragment
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         super.onActivityResult(requestCode, resultCode, data);
 
         if (data == null) return;
@@ -138,7 +137,8 @@ public class AlarmClockFragment extends AbstractTabFragment
 
         if (resultCode == Activity.RESULT_OK) {
 
-            AlarmClock alarmClock = new AlarmClock(daysArray, hour, minute, descString, active, ringtoneURI, AlarmClock.getAlarmList());
+            AlarmClock alarmClock =
+                    new AlarmClock(daysArray, hour, minute, descString, active, ringtoneURI, AlarmClock.getAlarmList());
 
             if (active) {
 
@@ -160,20 +160,22 @@ public class AlarmClockFragment extends AbstractTabFragment
             DBHelper.putAlarmValue(getContext(), contentValues, alarmClock);
 
             if (alarmId >= 0) {
-
                 //update record in DB
+
                 int alarmIdDB = alarmId + 1;
                 String strAlarmIdDb = String.valueOf(alarmIdDB);
                 DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[]{strAlarmIdDb});
 
             } else {
-
                 //Add record to DB
+
                 DBHelper.getDatabase(getContext()).insert(DBHelper.TABLE_ALARMS, null, contentValues);
             }
 
             new CreateAlarmTask().execute();
-            if (alarmClock.isActive()) showAlarmTimeToast(alarmClock);
+
+            if (alarmClock.isActive())
+                showAlarmTimeToast(alarmClock);
         }
 
         AlarmClock.getAlarmArrayMap(); //update data that set to adapter
@@ -183,12 +185,16 @@ public class AlarmClockFragment extends AbstractTabFragment
 
     @Override
     public void onClick(View v) {
+
         switch (v.getId()) {
 
             case R.id.btn_add_alarm:
+
                 Intent alarmAddIntent = new Intent(getContext(), AddAlarmActivity.class);
                 alarmAddIntent.setAction(CREATE_ALARM_ACTION);
+
                 startActivityForResult(alarmAddIntent, 1);
+
                 break;
         }
     }
@@ -229,12 +235,12 @@ public class AlarmClockFragment extends AbstractTabFragment
             int alarmIdDB = acmi.position + 1;
             String strAlarmIdDb = String.valueOf(alarmIdDB);
 
-            //DBHelper.getDatabase(getContext()).delete(DBHelper.TABLE_ALARMS, DBHelper.KEY_ID_ALARM + "=?", new String[] {strAlarmIdDb} );
             DBHelper.getDatabase(getContext()).delete(DBHelper.TABLE_ALARMS, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[]{strAlarmIdDb});
 
             AlarmClock.getAlarmList().remove(acmi.position);
             AlarmClock.recreateAlarmListId();
             AlarmClock.getAlarmArrayMap();
+
             adapter.notifyDataSetChanged();
 
             for (int i = alarmIdDB; i <= AlarmClock.getAlarmList().size(); i++) {
@@ -242,9 +248,10 @@ public class AlarmClockFragment extends AbstractTabFragment
                 ContentValues contentValues = new ContentValues();
                 contentValues.put(DBHelper.KEY_ID_ALARM_UPDATE, i);
                 String idDb = String.valueOf(i + 1);
+
                 DBHelper.getDatabase(getContext()).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[]{idDb});
             }
-            //AlarmClock.createAlarm(getContext(), getAlarmMgr(),AlarmClock.getAlarmList(), false);
+
             new CreateAlarmTask().execute();
 
             return true;
@@ -334,10 +341,13 @@ public class AlarmClockFragment extends AbstractTabFragment
                     hour = timeArray[0];
                     minute = timeArray[1];
                     position = timeArray[2];
+
                     String strHour = String.valueOf(hour);
                     String strMinute = String.valueOf(minute);
+
                     if (minute < 10) strMinute = "0" + minute;
                     if (hour < 10) strHour = "0" + hour;
+
                     ((TextView) view).setText(strHour + ":" + strMinute);
 
                     return true;
@@ -448,7 +458,8 @@ public class AlarmClockFragment extends AbstractTabFragment
 
             new CreateAlarmTask().execute();
 
-            if (alarmClock.isActive()) showAlarmTimeToast(alarmClock);
+            if (alarmClock.isActive())
+                showAlarmTimeToast(alarmClock);
         }
     }
 

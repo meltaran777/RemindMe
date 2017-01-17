@@ -27,6 +27,7 @@ import java.util.Map;
  */
 
 public class AlarmClock implements Comparable<AlarmClock> {
+
     private static final String DEBUG_TAG = "DebugAlarm";
     private static final String DEBUG_DELAY = "DebugDelay";
 
@@ -44,6 +45,7 @@ public class AlarmClock implements Comparable<AlarmClock> {
     final static String[] from = { ATTRIBUTE_NAME_TIME,
             ATTRIBUTE_NAME_MN,ATTRIBUTE_NAME_TS,ATTRIBUTE_NAME_WD,ATTRIBUTE_NAME_TH,ATTRIBUTE_NAME_FR,ATTRIBUTE_NAME_ST,ATTRIBUTE_NAME_SN,
             ATTRIBUTE_NAME_DISC ,ATTRIBUTE_NAME_ENABLE};
+
     public static final String ALARM_CLOCK_CREATE_ACTION = "org.bogdan.remindme.CREATE_ALARM";
     private static final String ALARM_CANCEL_ACTION = "org.bogdan.remindme.CANCEL_ALARM";
 
@@ -229,14 +231,18 @@ public class AlarmClock implements Comparable<AlarmClock> {
             if (alarmClock.isActive()) {
 
                 Intent alarmIntent = new Intent(context, AlarmReceiver.class);
+
                 alarmIntent.setAction(ALARM_CLOCK_CREATE_ACTION);
                 alarmIntent.putExtra("description", alarmClock.getDescription());
                 alarmIntent.putExtra("ringtone", alarmClock.getRingtoneURI());
                 alarmIntent.putExtra("hour", alarmClock.getHour());
                 alarmIntent.putExtra("minute", alarmClock.getMinute());
-                PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-                Log.d("DebugAlarm", "createAlarm: " + alarmClock.getDescription() + alarmClock.getHour() + ":" + alarmClock.getMinute());
+                PendingIntent alarmPendingIntent =
+                        PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+                Log.d("DebugAlarm", "createAlarm: " + alarmClock.getDescription() +
+                        alarmClock.getHour() + ":" + alarmClock.getMinute());
 
                 am.set(AlarmManager.RTC_WAKEUP, alarmClock.getAlarmTimeInMillis(), alarmPendingIntent);
 
@@ -276,25 +282,33 @@ public class AlarmClock implements Comparable<AlarmClock> {
                                 int alarmIdDB = alarmClockActive.getAlarmId() + 1;
                                 String strAlarmIdDb = String.valueOf(alarmIdDB);
                                 ContentValues contentValues = new ContentValues();
-                                //DBHelper.putAlarmValue(context, contentValues, alarmClockActive.getDescription(), alarmClockActive.getRingtoneURI(), false, alarmClockActive.getAlarmDays(), alarmClockActive.getHour(), alarmClockActive.getMinute());
+
                                 DBHelper.putAlarmValue(context, contentValues, alarmClockActive);
 
-                                Log.d(DEBUG_TAG, "Active = " + alarmClockActive.isActive() + " ID = " + alarmClockActive.getAlarmId() + " Desc " + alarmClockActive.getDescription());
+                                Log.d(DEBUG_TAG, "Active = " + alarmClockActive.isActive()
+                                        + " ID = " + alarmClockActive.getAlarmId() + " Desc "
+                                        + alarmClockActive.getDescription());
+
                                 Log.d(DEBUG_TAG, "AlarmId DB = " + strAlarmIdDb);
-                                //DBHelper.getDatabase(context).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM + "=?", new String[] {strAlarmIdDb} );
-                                DBHelper.getDatabase(context).update(DBHelper.TABLE_ALARMS, contentValues, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[]{strAlarmIdDb});
+
+                                DBHelper.getDatabase(context).update(DBHelper.TABLE_ALARMS,
+                                        contentValues, DBHelper.KEY_ID_ALARM_UPDATE + "=?", new String[]{strAlarmIdDb});
                             }
                     }
 
                 Intent alarmIntent = new Intent(context, AlarmReceiver.class);
+
                 alarmIntent.setAction(ALARM_CLOCK_CREATE_ACTION);
                 alarmIntent.putExtra("description", alarmClock.getDescription());
                 alarmIntent.putExtra("ringtone", alarmClock.getRingtoneURI());
                 alarmIntent.putExtra("hour", alarmClock.getHour());
                 alarmIntent.putExtra("minute", alarmClock.getMinute());
-                PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-                Log.d("DebugReboot", "createAlarm: " + alarmClock.getDescription() + alarmClock.getHour() + ":" + alarmClock.getMinute());
+                PendingIntent alarmPendingIntent =
+                        PendingIntent.getBroadcast(context, 0, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+                Log.d("DebugReboot", "createAlarm: " + alarmClock.getDescription() +
+                        alarmClock.getHour() + ":" + alarmClock.getMinute());
 
                 am.set(AlarmManager.RTC_WAKEUP, alarmClock.getAlarmTimeInMillis(), alarmPendingIntent);
 
@@ -305,15 +319,23 @@ public class AlarmClock implements Comparable<AlarmClock> {
     }
 
     public static void createAlarm(Context context, AlarmManager alarmMgr,Intent alarmIntent, long delay, int id){
-        PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context,id,alarmIntent,PendingIntent.FLAG_CANCEL_CURRENT);
+
+        PendingIntent alarmPendingIntent =
+                PendingIntent.getBroadcast(context,id,alarmIntent,PendingIntent.FLAG_CANCEL_CURRENT);
+
         alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime()+delay, alarmPendingIntent);
     }
 
     public static  void cancelAlarmDialogShowAction(Context context, AlarmManager alarmMgr, int id){
+
         Intent alarmIntent = new Intent(context, AlarmReceiver.class);
+
         alarmIntent.putExtra("show",false);
         alarmIntent.setAction(AlarmDialogActivity.ALARM_DIALOG_ACTION);
-        PendingIntent alarmPendingIntent = PendingIntent.getBroadcast(context, id, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        PendingIntent alarmPendingIntent =
+                PendingIntent.getBroadcast(context, id, alarmIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
         alarmMgr.set(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), alarmPendingIntent);
     }
 
@@ -328,7 +350,10 @@ public class AlarmClock implements Comparable<AlarmClock> {
 
     public boolean isSingle(){
         boolean single = true;
-        for (boolean day : getAlarmDays()) if (day) single = false;
+
+        for (boolean day : getAlarmDays())
+            if (day) single = false;
+
         return single;
     }
     public static List<AlarmClock> getAlarmList() {
@@ -375,66 +400,4 @@ public class AlarmClock implements Comparable<AlarmClock> {
         return ringtoneURI;
     }
 
-    public long getAlarmDiffInMillis() {
-        Calendar alarmCalendar = Calendar.getInstance();
-        boolean[] alarmDays = getAlarmDays();
-        int dayOfWeek;
-        int hour = getHour();
-        int minute = getMinute();
-        boolean single = true;
-        LocalDateTime now;
-        LocalDateTime alarmTime = new LocalDateTime();
-
-        for (int i=0; i<alarmDays.length; i++) {
-            if (alarmDays[i]) {
-                single = false;
-                dayOfWeek = i + 1;
-                alarmTime = new LocalDateTime().withDayOfWeek(dayOfWeek).withHourOfDay(hour).withMinuteOfHour(minute);
-                now = new LocalDateTime().plusMillis(1);
-                if(alarmTime.isBefore(now)) {
-                    alarmTime = alarmTime.plusWeeks(1);
-                    int dayOfMonth = alarmTime.getDayOfMonth();
-                    int month = alarmTime.getMonthOfYear();
-                    int year = alarmTime.getYear();
-                    alarmCalendar.set(year, month-1, dayOfMonth);
-                }else {
-                    int dayOfMonth = alarmTime.getDayOfMonth();
-                    int month = alarmTime.getMonthOfYear();
-                    int year = alarmTime.getYear();
-                    alarmCalendar.set(year, month-1, dayOfMonth);
-                }
-            }
-        }
-        if (single) {
-            alarmTime = new LocalDateTime().withHourOfDay(hour).withMinuteOfHour(minute);
-            now = new LocalDateTime().plusMillis(1);
-            if(alarmTime.isBefore(now)) {
-                alarmTime = alarmTime.plusDays(1);
-                int dayOfMonth = alarmTime.getDayOfMonth();
-                int month = alarmTime.getMonthOfYear();
-                int year = alarmTime.getYear();
-                alarmCalendar.set(year, month-1, dayOfMonth);
-            }else {
-                int dayOfMonth = alarmTime.getDayOfMonth();
-                int month = alarmTime.getMonthOfYear();
-                int year = alarmTime.getYear();
-                alarmCalendar.set(year, month-1, dayOfMonth);
-            }
-        }
-
-        alarmCalendar.set(Calendar.HOUR_OF_DAY, hour);
-        alarmCalendar.set(Calendar.MINUTE, minute);
-        alarmCalendar.set(Calendar.SECOND, 0);
-        alarmCalendar.set(Calendar.MILLISECOND, 0);
-
-        Long alarmTimeMillis = alarmCalendar.getTimeInMillis();
-        Long nowMillis = GregorianCalendar.getInstance().getTimeInMillis();
-        Long diff = alarmTimeMillis - nowMillis;
-        if (debug) {
-            Log.d(DEBUG_DELAY, "InMillis:AlarmTimeJoda "+alarmTime.toString());
-            Log.d(DEBUG_DELAY, "InMillis:Calendar " + alarmCalendar.toString());
-            Log.d(DEBUG_DELAY, "InMillis:Diff: " +"Hour = "+diff/(1000*36000) +" Second = " +diff/1000);
-        }
-        return diff;
-    }
 }

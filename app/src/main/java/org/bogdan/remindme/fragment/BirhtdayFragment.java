@@ -92,6 +92,7 @@ public class BirhtdayFragment extends AbstractTabFragment{
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         if(UserVK.getUsersList().isEmpty())
             tvError.setVisibility(TextView.VISIBLE);
     }
