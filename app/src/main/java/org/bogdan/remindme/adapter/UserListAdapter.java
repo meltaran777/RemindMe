@@ -10,20 +10,20 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import org.bogdan.remindme.R;
 import org.bogdan.remindme.activities.HappyBirthdayDialogActivity;
 import org.bogdan.remindme.content.UserVK;
 import org.bogdan.remindme.database.DBHelper;
-import org.bogdan.remindme.util.NotificationPublisher;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -51,20 +51,32 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
     }
 
     @Override
-    public void onBindViewHolder(RemindViewHollder holder, final int position) {
+    public void onBindViewHolder(final RemindViewHollder holder, final int position) {
 
-        if(!data.isEmpty()) {
+        if(!data.isEmpty() && data.size() > 0) {
 
-            if(data.get(position).getAvatarURL()!=null){
+            if(data.get(position).getAvatarURL() != null){
 
-                Picasso.with(view.getContext()).load(data.get(position).getAvatarURL()).resize(IMG_WIDTH, IMG_HIGH).into(holder.imageBtnAvatar);
+                Picasso.with(view.getContext())
+                        .load(data.get(position).getAvatarURL())
+                        .fit()
+                        .into(holder.imageBtnAvatar, new Callback() {
+                            @Override
+                            public void onSuccess() {
+                                holder.progressBar.setVisibility(View.GONE);
+                            }
+
+                            @Override
+                            public void onError() {
+                            }
+                        });
             }
 
-            if(data.get(position).getDateFormat()!=null){
+            if(data.get(position).getDateFormat() != null){
 
                 DateTimeFormatter dateTimeFormat = DateTimeFormat.forPattern(data.get(position).getDateFormat());
                 holder.tvName.setText(data.get(position).getName());
-                holder.tvBdate.setText(view.getContext().getString(R.string.str_birthday_text)+data.get(position).getBirthDate().toString(dateTimeFormat));
+                holder.tvBdate.setText(view.getContext().getString(R.string.str_birthday_text)+data.get(position).getBirthdayDate().toString(dateTimeFormat));
                 holder.tvTimeToBdate.setText(view.getContext().getString(R.string.str_next_birth)+data.get(position).getTimeToNextBirht());
             }
 
@@ -84,35 +96,30 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
                     view.getContext().startActivity(happyBirthdayDialogIntent);
                 }
             });
+            if (data.get(position) != null) {
+                holder.checkBoxVIP.setOnCheckedChangeListener(null);
+                holder.checkBoxVIP.setChecked(data.get(position).isNotify());
+                holder.checkBoxVIP.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-            holder.checkBoxVIP.setOnCheckedChangeListener(null);
-            holder.checkBoxVIP.setChecked(data.get(position).isNotify());
-            holder.checkBoxVIP.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                @Override
-                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        final UserVK userVK = data.get(position);
+                        userVK.setNotify(isChecked);
 
-                    UserVK userVK = data.get(position);
-                    userVK.setNotify(isChecked);
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                ContentValues contentValues = new ContentValues();
+                                DBHelper.putUserValue(view.getContext(), userVK, contentValues);
+                                DBHelper.getDatabase(view.getContext()).update(DBHelper.TABLE_USERS, contentValues, DBHelper.KEY_NAME + "=?", new String[]{userVK.getName()});
+                            }
+                        }).start();
 
-                    ContentValues contentValues = new ContentValues();
-                    DBHelper.putUserValue(view.getContext(), userVK, contentValues);
-                    DBHelper.getDatabase(view.getContext()).update(DBHelper.TABLE_USERS, contentValues, DBHelper.KEY_NAME+ "=?", new String[] {userVK.getName()} );
+                        data.get(position).setNotify(isChecked);
 
-                    data.get(position).setNotify(isChecked);
-
-                    if ((data.get(position).getDayToNextBirht() -  data.get(0).getDayToNextBirht()) < 3){
-
-                        List<UserVK> userVKListFull = UserVK.getUserVKListFull(data);
-                        Collections.sort(userVKListFull);
-                        UserVK user = userVKListFull.get(0);
-
-                        NotificationPublisher.scheduleNotification(view.getContext(), user);
                     }
-                    //Toast.makeText(view.getContext(), String.valueOf(data.get(position).getId()), Toast.LENGTH_SHORT).show();
-                    //Test Notification
-                    //NotificationPublisher.testScheduleNotification(view.getContext(), userVK);
-                }
-            });
+                });
+            }
         }
     }
     @Override
@@ -128,6 +135,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
         TextView tvTimeToBdate;
         ImageButton imageBtnAvatar;
         CheckBox checkBoxVIP;
+        ProgressBar progressBar;
 
         public RemindViewHollder(View itemView) {
             super(itemView);
@@ -138,6 +146,7 @@ public class UserListAdapter extends RecyclerView.Adapter<UserListAdapter.Remind
             tvTimeToBdate = (TextView) itemView.findViewById(R.id.tvTimeToBdate);
             imageBtnAvatar = (ImageButton) itemView.findViewById(R.id.imageViewAvatarVK);
             checkBoxVIP = (CheckBox) itemView.findViewById(R.id.checkboxVIP);
+            progressBar = (ProgressBar) itemView.findViewById(R.id.pbUserListItem);
 
         }
     }

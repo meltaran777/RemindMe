@@ -1,38 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:paddingTop="5dp"
-    android:paddingBottom="5dp"
-    android:layout_height="match_parent"
-    android:id="@+id/frame_layout">
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_centerInParent="true"/>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/tv_vk_not_load_text"
-                    android:textColor="@color/Black"
-                    android:textSize="7pt"
-                    android:layout_gravity="center_horizontal"
-                    android:visibility="invisible"
-                    android:id="@+id/tvError"/>
-
-                <ProgressBar
-                    android:id="@+id/progressBar"
-                    android:visibility="invisible"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"/>
-
-        </LinearLayout>
+        <TextView
+            android:text="Login Vk to see your frinds birthday list"
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/vkLoginBtn"
+            android:layout_centerHorizontal="true"
+            android:id="@+id/textVkLogin" />
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
 
-</FrameLayout>
+        <Button
+            android:text="Login VK"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/vkLoginBtn"
+            android:layout_centerVertical="true"
+            android:layout_alignLeft="@+id/textVkLogin"
+            android:layout_alignStart="@+id/textVkLogin"
+            android:layout_alignRight="@+id/textVkLogin"
+            android:layout_alignEnd="@+id/textVkLogin" />
+
+</RelativeLayout>

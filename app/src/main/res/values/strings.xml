@@ -150,5 +150,6 @@
     <string name="happy_birthday">Happy Birthday</string>
     <string name="txtNoAlarm">No alarm clock,add someone</string>
     <string name="message_send">Message send</string>
+    <string name="tab_item_vk_login">VK Login</string>
 
 </resources>

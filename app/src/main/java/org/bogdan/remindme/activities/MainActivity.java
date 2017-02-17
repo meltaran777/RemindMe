@@ -4,21 +4,27 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
-import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKCallback;
 import com.vk.sdk.VKScope;
@@ -31,32 +37,50 @@ import com.vk.sdk.api.VKRequest;
 import com.vk.sdk.api.VKResponse;
 import com.vk.sdk.api.model.VKApiUserFull;
 import com.vk.sdk.api.model.VKUsersArray;
+import com.vk.sdk.util.VKUtil;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
 import org.bogdan.remindme.R;
+import org.bogdan.remindme.content.AlarmClock;
+import org.bogdan.remindme.content.User;
+import org.bogdan.remindme.fragment.CalendarFragment;
 import org.bogdan.remindme.content.UserVK;
 import org.bogdan.remindme.adapter.TabsFragmentAdapter;
 import org.bogdan.remindme.database.DBHelper;
-import org.bogdan.remindme.fragment.AlarmClockFragment;
 import org.bogdan.remindme.fragment.BirhtdayFragment;
+import org.bogdan.remindme.util.RestServiceAPI;
 import org.bogdan.remindme.util.NotificationPublisher;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
+import java.lang.reflect.Type;
 import java.util.Collections;
-import java.util.List;
+import java.util.Date;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Created by Bodia on 09.06.2016.
  */
 public class MainActivity extends AppCompatActivity {
 
+    private static final String URL = "http://192.168.0.101:8080";
+
+    private final String[] vkScope = new String[]{VKScope.MESSAGES, VKScope.FRIENDS, VKScope.WALL};
+
+    private final VKRequest getVKFriendsListRequest =
+            VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
+
     private static final int TAB_ALARM_CLOCK =0;
     private static final int TAB_BIRTHDAY =1;
     private static final int TAB_CALENDAR =2;
 
-    public static final String APP_TAG = "RemindMeDebug" ;
+    public static final String APP_TAG = "RemindMeDebug";
 
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
@@ -64,8 +88,6 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager viewPager;
     private NavigationView navigationView;
     private FloatingActionButton fab;
-
-    private static boolean VkLogin = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,16 +97,19 @@ public class MainActivity extends AppCompatActivity {
         setTheme(R.style.AppDefault);
         setContentView(R.layout.main_layout);
 
+        JodaTimeAndroid.init(MainActivity.this);
+
         fab = (FloatingActionButton) findViewById(R.id.btn_add_alarm);
-
-        JodaTimeAndroid.init(this);
-
-        vkLogin();
 
         initToolbar();
         initTabs();
+    }
 
-        showHappyBirthdayDialog();
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+
+        dowloadVkFriendsList();
     }
 
     private void showHappyBirthdayDialog() {
@@ -118,9 +143,18 @@ public class MainActivity extends AppCompatActivity {
         toolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                Intent settingsIntent = new Intent(getApplicationContext(),SettingsActivity.class);
-                startActivity(settingsIntent);
-                return true;
+                switch (item.getItemId()) {
+
+                    case R.id.settings :
+                    Intent settingsIntent = new Intent(getApplicationContext(), SettingsActivity.class);
+                    startActivity(settingsIntent);
+                        return true;
+
+                    case R.id.vkLogout:
+                        VKSdk.logout();
+                        return true;
+                }
+                return false;
             }
         });
         toolbar.inflateMenu(R.menu.menu);
@@ -132,12 +166,13 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    TabsFragmentAdapter tabsFragmentAdapter;
     private void initTabs() {
-        viewPager =(ViewPager) findViewById(R.id.ViewPager);
-        tabLayout =(TabLayout) findViewById(R.id.TabLayout);
+        viewPager = (ViewPager) findViewById(R.id.ViewPager);
+        tabLayout = (TabLayout) findViewById(R.id.TabLayout);
 
-        TabsFragmentAdapter adapter = new TabsFragmentAdapter(this,getSupportFragmentManager());
-        viewPager.setAdapter(adapter);
+        tabsFragmentAdapter = new TabsFragmentAdapter(MainActivity.this, getSupportFragmentManager());
+        viewPager.setAdapter(tabsFragmentAdapter);
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
@@ -154,6 +189,12 @@ public class MainActivity extends AppCompatActivity {
                 else {
                     fab.setVisibility(FloatingActionButton.VISIBLE);
                 }
+
+                if (position == TAB_ALARM_CLOCK)
+                    if (AlarmClock.getAlarmList().isEmpty()){
+                        Toast.makeText(getApplicationContext(),
+                                getResources().getString(R.string.txtNoAlarm), Toast.LENGTH_LONG).show();
+                    }
             }
 
             @Override
@@ -165,66 +206,23 @@ public class MainActivity extends AppCompatActivity {
         tabLayout.setupWithViewPager(viewPager);
     }
 
-    private void showNotificationTab(int tab){
-        viewPager.setCurrentItem(tab);
-    }
+    public void dowloadVkFriendsList() {
 
-    private void initNavigationView(){
+        String[] fingetprints = VKUtil.getCertificateFingerprint(MainActivity.this, MainActivity.this.getPackageName());
+        for (int i=0; i < fingetprints.length; i++) Log.i(APP_TAG, "dowloadVkFriendsList: " + fingetprints[i]);
 
-        drawerLayout=(DrawerLayout) findViewById(R.id.DrawerLayout);
-
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout,toolbar, R.string.view_navigation_open,R.string.view_navigation_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        /*navigationView = (NavigationView) findViewById(R.id.navigation);
-
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(MenuItem item) {
-
-                drawerLayout.closeDrawers();
-
-                switch (item.getItemId()){
-
-                    case R.id.menu_item_alarm_clock:
-                        showNotificationTab(TAB_ALARM_CLOCK);
-                        break;
-
-                    case R.id.menu_item_birthday:
-                        showNotificationTab(TAB_BIRTHDAY);
-                        break;
-
-                    case R.id.menu_item_calendar:
-                        showNotificationTab(TAB_CALENDAR);
-                        break;
-
-                    case R.id.menu_item_settings:
-                        Intent settingsIntent = new Intent(getApplicationContext(),SettingsActivity.class);
-                        startActivity(settingsIntent);
-                        break;
-                }
-                return true;
-            }
-        });
-        */
-    }
-
-    private String[] vkScope = new String[]{VKScope.MESSAGES, VKScope.FRIENDS, VKScope.WALL};
-
-    private VKRequest getVKFriendsListRequest =
-            VKApi.friends().get(VKParameters.from(VKApiConst.FIELDS, "id,first_name,last_name,bdate,photo_100"));
-
-    private void vkLogin() {
-        //String[] fingetprints = VKUtil.getCertificateFingerprint(this,this.getPackageName());
         if (isInternetAvailable()) {
-            if (!VKSdk.isLoggedIn()) VKSdk.login(this, vkScope);
-            else {
+            if (VKSdk.isLoggedIn()) {
                 vkRequestExecute(getVKFriendsListRequest);
             }
         }else {
-            DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList());
-            Collections.sort(UserVK.getUsersList());
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList());
+                    Collections.sort(UserVK.getUsersList());
+                }
+            }).start();
         }
     }
 
@@ -233,13 +231,22 @@ public class MainActivity extends AppCompatActivity {
         if(!VKSdk.onActivityResult(requestCode, resultCode, data, new VKCallback<VKAccessToken>() {
             @Override
             public void onResult(VKAccessToken res) {
-                setVklogin(true);
+
+                ((BirhtdayFragment) getSupportFragmentManager()
+                        .findFragmentByTag("android:switcher:" + R.id.ViewPager + ":" + TAB_BIRTHDAY))
+                        .showProgressBar();
+
                 vkRequestExecute(getVKFriendsListRequest);
             }
 
             @Override
             public void onError(VKError error) {
                 Log.e("ERROR", "VK init error");
+
+                BirhtdayFragment fragment = (BirhtdayFragment) getSupportFragmentManager()
+                        .findFragmentByTag("android:switcher:" + R.id.ViewPager + ":" + TAB_BIRTHDAY);
+                fragment.showVkLogin();
+                fragment.hideProgressBar();
             }
         }))
             super.onActivityResult(requestCode, resultCode, data);
@@ -277,21 +284,9 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 }
-                DBHelper.updateTableUserVKValue(getApplicationContext());
-                DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList());
-                Collections.sort(UserVK.getUsersList());
-                createNotification();
+                new UpdateDBTask().execute();
 
-                BirhtdayFragment instanceFragment =
-                        (BirhtdayFragment) getSupportFragmentManager().findFragmentByTag("android:switcher:" + R.id.ViewPager + ":" + TAB_BIRTHDAY);
-
-                if (instanceFragment != null) {
-
-                        instanceFragment.getAdapter().notifyDataSetChanged();
-
-                        if (!UserVK.getUsersList().isEmpty())
-                            instanceFragment.getTvError().setVisibility(TextView.INVISIBLE);
-                    }
+                sendUserListToServer();
             }
 
             @Override
@@ -314,22 +309,35 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void createNotification(){
+    private void sendUserListToServer() {
 
-        List<UserVK> userVKList=UserVK.getUsersList();
+        UserVK testUser = UserVK.getUsersList().get(0);
 
-        if(!userVKList.isEmpty()) {
+        Gson gson = new GsonBuilder()
+                .create();
 
-            Log.d("NotificationDebug", "Notification created");
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(URL)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
 
-            List<UserVK> userVKListFull = UserVK.getUserVKListFull(userVKList);
-            Collections.sort(userVKListFull);
-            UserVK userVK = userVKListFull.get(0);
+        RestServiceAPI restServiceAPI = retrofit.create(RestServiceAPI.class);
 
-            NotificationPublisher.scheduleNotification(getApplicationContext(), userVK);
+        restServiceAPI.saveUser(testUser.toUser()).enqueue(new Callback<User>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                Log.d(APP_TAG, "onResponse:User-User: response code " + String.valueOf(response.code()));
 
-        }else Log.d("NotificationDebug", "Create notification fail,empty list");
+                if (response.isSuccessful())
+                    Log.d(APP_TAG, "onResponse:User-User: " + response.body().getId());
+            }
 
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Log.d(APP_TAG, "onFailure:User-User: request failed");
+                t.printStackTrace();
+            }
+        });
     }
 
     public boolean isInternetAvailable() {
@@ -339,12 +347,40 @@ public class MainActivity extends AppCompatActivity {
         return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
-    public static boolean isVkLogin() {
-        return VkLogin;
+    public void vkLogin() {
+        VKSdk.login(MainActivity.this, vkScope);
     }
 
-    public void setVklogin(boolean vklogin) {
-        VkLogin = vklogin;
-    }
+    private class UpdateDBTask extends AsyncTask<Void, Void, Void>{
 
+        @Override
+        protected Void doInBackground(Void... params) {
+
+            DBHelper.updateTableUserVKValue(getApplicationContext());
+
+            DBHelper.readUserVKTable(getApplicationContext(), UserVK.getUsersList());
+
+            Collections.sort(UserVK.getUsersList());
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            BirhtdayFragment birhtdayFragment = (BirhtdayFragment) getSupportFragmentManager()
+                    .findFragmentByTag("android:switcher:" + R.id.ViewPager + ":" + TAB_BIRTHDAY);
+
+            CalendarFragment calendarFragment = (CalendarFragment) getSupportFragmentManager()
+                    .findFragmentByTag("android:switcher:" + R.id.ViewPager + ":" + TAB_CALENDAR);
+
+            if (birhtdayFragment != null) {
+                birhtdayFragment.updateBirthdayFragmentUI();
+            }
+
+            if (calendarFragment != null)
+                calendarFragment.refreshDecorator();
+        }
+    }
 }

@@ -18,17 +18,19 @@ import java.util.Map;
  */
 public class TabsFragmentAdapter extends FragmentPagerAdapter {
     private Context context;
-    private Map<Integer,AbstractTabFragment> tabsMap;
+    private Map<Integer, AbstractTabFragment> tabsMap = new HashMap<>();;
+    FragmentManager mFragmentManager;
 
     public TabsFragmentAdapter(Context context, FragmentManager fm) {
         super(fm);
         this.context = context;
+        this.mFragmentManager = fm;
         initTabsMap();
     }
 
     @Override
     public Fragment getItem(int position) {
-        return tabsMap.get(position);
+                return tabsMap.get(position);
     }
 
     @Override
@@ -43,9 +45,9 @@ public class TabsFragmentAdapter extends FragmentPagerAdapter {
 
 
     private void initTabsMap() {
-        tabsMap = new HashMap<>();
         tabsMap.put(0, AlarmClockFragment.getInstance(context));
         tabsMap.put(1, BirhtdayFragment.getInstance(context));
         tabsMap.put(2, CalendarFragment.getInstance(context));
     }
+
 }

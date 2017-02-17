@@ -25,7 +25,7 @@
             android:columnCount="2"
             android:orientation="horizontal" >
 
-        <FrameLayout
+        <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="16dp"
@@ -33,13 +33,19 @@
 
             <ImageButton
                 android:id="@+id/imageViewAvatarVK"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_gravity="left"
+                android:background="@color/Black" />
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="left"
-                android:background="@android:color/transparent"
-                app:srcCompat="@drawable/ic_birthday"/>
+                android:layout_centerInParent="true"
+                android:id="@+id/pbUserListItem" />
 
-        </FrameLayout>
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

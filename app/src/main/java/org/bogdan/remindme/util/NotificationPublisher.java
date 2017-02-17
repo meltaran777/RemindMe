@@ -83,15 +83,15 @@ public class NotificationPublisher extends BroadcastReceiver {
         UserVK userVK = userVKListFull.get(0);
 
         for (UserVK user : userVKListFull) {
-            //Log.d("NotificationDebug", "onReceive: "+ user.getName()+" "+String.valueOf(user.isNotify())+" "+user.getBirthDate().toString("dd/MM"));
+            //Log.d("NotificationDebug", "onReceive: "+ user.getName()+" "+String.valueOf(user.isNotify())+" "+user.getBirthdayDate().toString("dd/MM"));
         }
 
         scheduleNotification(context, userVK);
 
         for (int i = 1; i < userVKListFull.size(); i++){
 
-            String firstUserBirthDate = userVK.getBirthDate().toString("dd/MM");
-            String currentUserBirthDate = userVKListFull.get(i).getBirthDate().toString("dd/MM");
+            String firstUserBirthDate = userVK.getBirthdayDate().toString("dd/MM");
+            String currentUserBirthDate = userVKListFull.get(i).getBirthdayDate().toString("dd/MM");
 
             if (firstUserBirthDate.equals(currentUserBirthDate))
                 scheduleNotification(context, userVKListFull.get(i));
@@ -114,7 +114,7 @@ public class NotificationPublisher extends BroadcastReceiver {
         boolean original = userVK.isNotify();
         String largeIconUrl = userVK.getAvatarURL();
 
-        Log.d("DebugReboot", "scheduleNotification: "+userVK.getName()+" "+String.valueOf(original)+" "+userVK.getBirthDate().toString("dd/MM"));
+        Log.d("DebugReboot", "scheduleNotification: "+userVK.getName()+" "+String.valueOf(original)+" "+userVK.getBirthdayDate().toString("dd/MM"));
 
         builder = new NotificationCompat.Builder(context)
                 .setContentText(userVK.getName())

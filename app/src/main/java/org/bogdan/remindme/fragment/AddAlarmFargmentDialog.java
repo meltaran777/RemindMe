@@ -1,31 +1,38 @@
-package org.bogdan.remindme.activities;
+package org.bogdan.remindme.fragment;
 
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatDialogFragment;
 import android.support.v7.widget.SwitchCompat;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
 import org.bogdan.remindme.R;
+import org.bogdan.remindme.activities.AddAlarmActivity;
 import org.bogdan.remindme.content.AlarmClock;
-import org.bogdan.remindme.fragment.AlarmClockFragment;
 import org.joda.time.LocalTime;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class AddAlarmActivity extends AppCompatActivity implements View.OnClickListener {
-private final static int SOUND_PICKER_RESULT_CODE = 1;
+/**
+ * Created by Bodia on 17.02.2017.
+ */
+
+public class AddAlarmFargmentDialog extends AppCompatDialogFragment implements View.OnClickListener {
+
+    private final static int SOUND_PICKER_RESULT_CODE = 1;
     private EditText editText;
     private TextView dayView;
     private TextView soundView;
@@ -51,46 +58,80 @@ private final static int SOUND_PICKER_RESULT_CODE = 1;
     String ringtoneURI;
     String ringtoneTitle;
 
+    static AddAlarmFargmentDialog newInstance(Intent intent) {
+
+        AddAlarmFargmentDialog f = new AddAlarmFargmentDialog();
+
+        if (intent != null) {
+
+            boolean newAlarm = intent.getAction().equalsIgnoreCase(AlarmClockFragment.CREATE_ALARM_ACTION);
+            int alarmId = intent.getIntExtra("alarmID", -1);
+            boolean active = intent.getBooleanExtra("alarmActive", false);
+
+            Bundle args = new Bundle();
+            args.putBoolean("newAlarm", newAlarm);
+            args.putBoolean("alarmActive", active);
+            args.putInt("alarmID", alarmId);
+            f.setArguments(args);
+        }
+        return f;
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        setContentView(R.layout.add_alarm_layout);
+
+        int style = AppCompatDialogFragment.STYLE_NO_TITLE;
+        int theme = android.R.style.Theme_Holo_Light_Dialog_NoActionBar_MinWidth;
+
+        setStyle(style, theme);
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+        View v = inflater.inflate(R.layout.add_alarm_layout, container, false);
 
         ringtoneURI = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString();
-        ringtoneTitle = RingtoneManager.getRingtone(this,Uri.parse(ringtoneURI)).getTitle(this);
+        ringtoneTitle = RingtoneManager.getRingtone(getContext(), Uri.parse(ringtoneURI)).getTitle(getContext());
 
-        editText = (EditText) findViewById(R.id.textViewDescription);
-        dayView = (TextView) findViewById(R.id.textRepeatDays);
-        soundView = (TextView) findViewById(R.id.textSound);
-        btnRepeat = (Button) findViewById(R.id.btn_repeat);
-        btnCancel = (Button) findViewById(R.id.btn_cancel);
-        btnOK = (Button) findViewById(R.id.btn_ok);
-        btnSound = (Button) findViewById(R.id.btn_sound);
-        switchCompat = (SwitchCompat) findViewById(R.id.switch_on_off);
-        timePicker = (TimePicker) findViewById(R.id.timePickerAddAlarm);
+        editText = (EditText) v.findViewById(R.id.textViewDescription);
+        dayView = (TextView)   v.findViewById(R.id.textRepeatDays);
+        soundView = (TextView) v.findViewById(R.id.textSound);
+        btnRepeat = (Button) v.findViewById(R.id.btn_repeat);
+        btnCancel = (Button) v.findViewById(R.id.btn_cancel);
+        btnOK = (Button)     v.findViewById(R.id.btn_ok);
+        btnSound = (Button) v.findViewById(R.id.btn_sound);
+        switchCompat = (SwitchCompat) v.findViewById(R.id.switch_on_off);
+        timePicker = (TimePicker) v.findViewById(R.id.timePickerAddAlarm);
 
         LocalTime localTime = new LocalTime();
         timePicker.setIs24HourView(true);
         timePicker.setCurrentHour(localTime.getHourOfDay());
-
-
 
         btnRepeat.setOnClickListener(this);
         btnCancel.setOnClickListener(this);
         btnOK.setOnClickListener(this);
         btnSound.setOnClickListener(this);
 
-        Intent intent = getIntent();
-        if (intent != null) {
+        return v;
+    }
 
-            if(intent.getAction().equalsIgnoreCase(AlarmClockFragment.CREATE_ALARM_ACTION))
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        Bundle arguments = getArguments();
+        if (arguments != null) {
+
+            if(arguments.getBoolean("newAlarm"))
                 switchCompat.setEnabled(false);
             else
                 switchCompat.setEnabled(true);
 
-            alarmId = intent.getIntExtra("alarmID", -1);
-            boolean active = intent.getBooleanExtra("alarmActive",false);
+            alarmId = arguments.getInt("alarmID", -1);
+            boolean active = arguments.getBoolean("alarmActive",false);
             if (alarmId >= 0) {
                 int hour = AlarmClock.getAlarmList().get(alarmId).getHour();
                 switchCompat.setChecked(active);
@@ -103,23 +144,12 @@ private final static int SOUND_PICKER_RESULT_CODE = 1;
             textViewSetText();
         }
     }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == Activity.RESULT_OK)
-        {
-            Uri uri = data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);
-            if (uri != null){
-                ringtoneURI = uri.toString();
-            }
-            else ringtoneURI = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM).toString();
-        }
-        textViewSetText();
-    }
+
     @Override
     public void onClick(View v) {
         Intent intent;
         switch (v.getId()){
+
             case R.id.btn_ok:
                 String descText = editText.getText().toString();
                 int hour = timePicker.getCurrentHour();
@@ -134,22 +164,25 @@ private final static int SOUND_PICKER_RESULT_CODE = 1;
                 intent.putExtra("alarmId",alarmId);
                 intent.putExtra("active",active);
                 intent.putExtra("ringtone",ringtoneURI);
-                setResult(Activity.RESULT_OK,intent);
 
-                finish();
+                getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_OK, intent);
+
+                getDialog().dismiss();
                 break;
+
             case R.id.btn_cancel:
                 intent = new Intent();
                 intent.putExtra("alarmId",alarmId);
-                setResult(Activity.RESULT_CANCELED);
-                finish();
+                getTargetFragment().onActivityResult(getTargetRequestCode(), Activity.RESULT_CANCELED, intent);
+                getDialog().dismiss();
                 break;
+
             case R.id.btn_repeat:
-                AlertDialog.Builder builder = new AlertDialog.Builder(AddAlarmActivity.this);
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
                 builder.setIcon(R.drawable.ic_inf);
                 builder.setTitle("Repeat");
                 builder.setCancelable(false);
-                 String[] day = new String[]{
+                String[] day = new String[]{
                         "Monday",
                         "Tuesday",
                         "Wednesday",
@@ -181,7 +214,7 @@ private final static int SOUND_PICKER_RESULT_CODE = 1;
                 dialog.show();
                 break;
             case R.id.btn_sound:
-                Uri currentTone= RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM);
+                Uri currentTone= RingtoneManager.getActualDefaultRingtoneUri(getContext(), RingtoneManager.TYPE_ALARM);
                 if (ringtoneURI != null) currentTone = Uri.parse(ringtoneURI);
 
                 Intent soundPickerIntent = new Intent(RingtoneManager.ACTION_RINGTONE_PICKER);
@@ -194,11 +227,10 @@ private final static int SOUND_PICKER_RESULT_CODE = 1;
                 startActivityForResult(soundPickerIntent, SOUND_PICKER_RESULT_CODE);
                 break;
         }
-
     }
 
     private void textViewSetText(){
-        ringtoneTitle = RingtoneManager.getRingtone(this,Uri.parse(ringtoneURI)).getTitle(this);
+        ringtoneTitle = RingtoneManager.getRingtone(getContext(),Uri.parse(ringtoneURI)).getTitle(getContext());
         int substringSize;
         if (ringtoneTitle.length() <= 16) substringSize = ringtoneTitle.length()-1;
         else substringSize = 16;

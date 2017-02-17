@@ -8,6 +8,8 @@ import com.vk.sdk.VKAccessTokenTracker;
 import com.vk.sdk.VKScope;
 import com.vk.sdk.VKSdk;
 
+import net.danlew.android.joda.JodaTimeAndroid;
+
 /**
  * Created by Bodia on 04.11.2016.
  */
@@ -16,6 +18,8 @@ public class Application extends android.app.Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        JodaTimeAndroid.init(this);
 
         vkAccessTokenTracker.startTracking();
         VKSdk.initialize(this);

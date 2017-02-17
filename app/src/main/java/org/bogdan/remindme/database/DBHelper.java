@@ -3,7 +3,6 @@ package org.bogdan.remindme.database;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -290,7 +289,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }else return true;
     }
     public static void putUserValue(Context context, UserVK userVK, ContentValues contentValues){
-        DateTime birthDate = userVK.getBirthDate();
+        DateTime birthDate = userVK.getBirthdayDate();
         DateTimeFormatter fmt = DateTimeFormat.forPattern(userVK.getDateFormat());
         String bdate = fmt.print(birthDate);
 
@@ -319,7 +318,7 @@ public class DBHelper extends SQLiteOpenHelper {
             }
             if (!userExist) {
                 Log.d("VKDebug", "updateTableUserVKValue:Add "+userVK.getName());
-                DateTime birthDate = userVK.getBirthDate();
+                DateTime birthDate = userVK.getBirthdayDate();
                 DateTimeFormatter fmt = DateTimeFormat.forPattern(userVK.getDateFormat());
                 String bdate = fmt.print(birthDate);
 
@@ -353,7 +352,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
         for(UserVK userVK : UserVK.getUsersList()) {
 
-            DateTime birthDate = userVK.getBirthDate();
+            DateTime birthDate = userVK.getBirthdayDate();
             DateTimeFormatter fmt = DateTimeFormat.forPattern(userVK.getDateFormat());
             String bdate = fmt.print(birthDate);
 
