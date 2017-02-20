@@ -105,7 +105,7 @@
     <string name="pref_app_title">О приложении</string>
     <string name="pref_app_summary">Приложение RemindMe,ничего не забывайте!</string>
     <string name="pref_version_title">Версия сборки</string>
-    <string name="pref_version_summary">1.0</string>
+    <string name="pref_version_summary">1.1</string>
     <string name="pref_developer_title">Разработчик</string>
     <string name="pref_developer_summary">Bohdan  Khrystov</string>
     <string name="pref_share_title">Поделитесь приложением</string>

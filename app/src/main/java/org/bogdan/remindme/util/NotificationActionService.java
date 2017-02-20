@@ -27,7 +27,7 @@ public class NotificationActionService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         String action = intent.getAction();
         if (NotificationPublisher.DISPLAY_NOTIFICATION_ACTION.equals(action)) {
-            int id = intent.getIntExtra("id",123);
+            int id = intent.getIntExtra("id", 123);
             AlarmManager alarmMgr = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
             AlarmClock.cancelAlarmDialogShowAction(getApplicationContext(), alarmMgr, id);
             NotificationManagerCompat.from(getApplicationContext()).cancel(id);

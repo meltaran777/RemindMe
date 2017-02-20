@@ -6,6 +6,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -21,10 +22,6 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
 import com.vk.sdk.VKAccessToken;
 import com.vk.sdk.VKCallback;
 import com.vk.sdk.VKScope;
@@ -49,15 +46,17 @@ import org.bogdan.remindme.content.UserVK;
 import org.bogdan.remindme.adapter.TabsFragmentAdapter;
 import org.bogdan.remindme.database.DBHelper;
 import org.bogdan.remindme.fragment.BirhtdayFragment;
-import org.bogdan.remindme.util.RestServiceAPI;
+import org.bogdan.remindme.util.RemindMeRestAPI;
 import org.bogdan.remindme.util.NotificationPublisher;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 
-import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import okhttp3.OkHttpClient;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -150,9 +149,13 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(settingsIntent);
                         return true;
 
+                    /*
                     case R.id.vkLogout:
                         VKSdk.logout();
                         return true;
+                         */
+
+
                 }
                 return false;
             }
@@ -311,30 +314,39 @@ public class MainActivity extends AppCompatActivity {
 
     private void sendUserListToServer() {
 
-        UserVK testUser = UserVK.getUsersList().get(0);
+        List<User> userList = new ArrayList<>();
+
+        for (UserVK userVK : UserVK.getUsersList()){
+            userList.add(userVK.toUser());
+        }
 
         Gson gson = new GsonBuilder()
                 .create();
 
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(1, TimeUnit.MINUTES)
+                .build();
+
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(URL)
+                .client(client)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
 
-        RestServiceAPI restServiceAPI = retrofit.create(RestServiceAPI.class);
+        RemindMeRestAPI remindMeRestAPI = retrofit.create(RemindMeRestAPI.class);
 
-        restServiceAPI.saveUser(testUser.toUser()).enqueue(new Callback<User>() {
+        remindMeRestAPI.saveUser(userList).enqueue(new Callback<Integer>() {
             @Override
-            public void onResponse(Call<User> call, Response<User> response) {
-                Log.d(APP_TAG, "onResponse:User-User: response code " + String.valueOf(response.code()));
+            public void onResponse(Call<Integer> call, Response<Integer> response) {
+                Log.d(APP_TAG, "onResponse:Response code " + String.valueOf(response.code()));
 
                 if (response.isSuccessful())
-                    Log.d(APP_TAG, "onResponse:User-User: " + response.body().getId());
+                    Log.d(APP_TAG, "onResponse: " + response.body().toString());
             }
 
             @Override
-            public void onFailure(Call<User> call, Throwable t) {
-                Log.d(APP_TAG, "onFailure:User-User: request failed");
+            public void onFailure(Call<Integer> call, Throwable t) {
+                Log.d(APP_TAG, "onFailure: ");
                 t.printStackTrace();
             }
         });
